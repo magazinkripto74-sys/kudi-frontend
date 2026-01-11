@@ -5,7 +5,8 @@ import { createAssociatedTokenAccountInstruction, createTransferCheckedInstructi
 import AvatarStore from './AvatarStore'
 import "./styles/avatarstore.glass.css"
 
-const API_BASE = 'http://localhost:4010'
+const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
+
 
 // Defaults can be overridden via .env (VITE_*)
 const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || 'https://api.mainnet-beta.solana.com'
