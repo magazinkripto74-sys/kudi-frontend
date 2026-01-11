@@ -1,0 +1,179 @@
+/* =========================================================
+   Avatar Store Glass/Neon Upgrade (SCOPED + SAFE)
+   Scope: ONLY inside ".modalOverlay .storeModal"
+   - EPIC / LEGENDARY / KUDI: separate neon glow
+   - Glass + mirror sheen + subtle noise
+   - Breathing glow (light)
+   - Owned premium
+   - Hover light shift
+   ========================================================= */
+
+/* ---- Tier glow tokens (local to store modal) ---- */
+.modalOverlay .storeModal{
+  --epicGlow: rgba(96,165,250,.72);      /* cyan/blue */
+  --legendGlow: rgba(192,132,252,.78);   /* purple */
+  --kudiGlow: rgba(245,158,11,.80);      /* gold */
+  --glassBg: rgba(19,19,37,.78);
+  --glassLine: rgba(255,255,255,.12);
+  --glassLine2: rgba(255,255,255,.18);
+  --shadow: rgba(0,0,0,.55);
+}
+
+/* ---- Modal frame: more premium glass, no layout changes ---- */
+.modalOverlay .storeModal{
+  background:
+    radial-gradient(900px 460px at 12% 0%, rgba(192,132,252,.10), transparent 55%),
+    radial-gradient(860px 420px at 88% 10%, rgba(96,165,250,.08), transparent 60%),
+    rgba(12,14,22,.90);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 22px 90px rgba(0,0,0,.62);
+}
+
+/* ---- Header subtle glass strip ---- */
+.modalOverlay .storeModal .modalHead{
+  background: rgba(255,255,255,.02);
+}
+
+/* ---- Tier title neon (supports existing tier_KUDI classes) ---- */
+.modalOverlay .storeModal .storeTierTitle.tier_EPIC{ text-shadow: 0 0 18px var(--epicGlow); }
+.modalOverlay .storeModal .storeTierTitle.tier_LEGENDARY{ text-shadow: 0 0 18px var(--legendGlow); }
+.modalOverlay .storeModal .storeTierTitle.tier_KUDI{ text-shadow: 0 0 18px var(--kudiGlow); }
+
+/* ---- Cards: glass + neon; scoped to store only ---- */
+.modalOverlay .storeModal .avatarCard{
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid var(--glassLine);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18)),
+    rgba(11,11,18,.26);
+  box-shadow: 0 14px 46px rgba(0,0,0,.42);
+  overflow: hidden;
+  transform: translateZ(0);
+}
+
+/* Mirror sheen */
+.modalOverlay .storeModal .avatarCard::before{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0) 40%,
+    rgba(255,255,255,.14) 50%,
+    rgba(255,255,255,0) 60%
+  );
+  transform: rotate(10deg) translateX(-26%);
+  opacity:.55;
+  pointer-events:none;
+}
+
+/* Subtle noise texture */
+.modalOverlay .storeModal .avatarCard::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 3px 3px;
+  opacity: .06;
+  pointer-events:none;
+  mix-blend-mode: overlay;
+}
+
+/* Tier glow mapping (works with existing "tier_EPIC" etc.) */
+.modalOverlay .storeModal .avatarCard.tier_EPIC{ --tierGlow: var(--epicGlow); }
+.modalOverlay .storeModal .avatarCard.tier_LEGENDARY{ --tierGlow: var(--legendGlow); }
+.modalOverlay .storeModal .avatarCard.tier_KUDI{ --tierGlow: var(--kudiGlow); }
+
+/* Animated border aura layer (no extra DOM needed) */
+@keyframes kudiAuraShift{
+  0%{ transform: translate3d(-2%, -2%, 0); opacity:.30; }
+  50%{ transform: translate3d(2%, 2%, 0); opacity:.52; }
+  100%{ transform: translate3d(-2%, -2%, 0); opacity:.30; }
+}
+.modalOverlay .storeModal .avatarCard .avatarGlow{
+  position:absolute;
+  inset:-2px;
+  border-radius: 18px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 12%, var(--tierGlow), transparent 55%),
+    radial-gradient(circle at 82% 88%, var(--tierGlow), transparent 60%);
+  opacity:.35;
+  mix-blend-mode: screen;
+  animation: kudiAuraShift 4.6s ease-in-out infinite;
+}
+
+/* If avatarGlow div doesn't exist, still provide aura via shadow */
+.modalOverlay .storeModal .avatarCard{
+  box-shadow:
+    0 14px 46px rgba(0,0,0,.42),
+    0 0 0 1px rgba(255,255,255,.06),
+    0 0 26px color-mix(in srgb, var(--tierGlow) 40%, transparent);
+}
+
+/* Breathing glow (light) */
+@keyframes kudiBreath{
+  0%,100%{ filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+  50%{ filter: drop-shadow(0 0 18px var(--tierGlow)); }
+}
+.modalOverlay .storeModal .avatarCard{
+  animation: kudiBreath 3.2s ease-in-out infinite;
+}
+
+/* Hover: premium lift */
+.modalOverlay .storeModal .avatarCard:hover{
+  transform: translateY(-2px) scale(1.01);
+  transition: transform .16s ease, box-shadow .16s ease;
+  box-shadow:
+    0 18px 60px rgba(0,0,0,.55),
+    0 0 44px color-mix(in srgb, var(--tierGlow) 70%, transparent),
+    0 0 0 1px rgba(255,255,255,.10);
+}
+.modalOverlay .storeModal .avatarCard:hover::before{
+  opacity:.70;
+  transform: rotate(10deg) translateX(8%);
+}
+
+/* Owned: stronger, cleaner premium */
+.modalOverlay .storeModal .avatarCard.isOwned{
+  border-color: var(--glassLine2);
+  box-shadow:
+    0 20px 72px rgba(0,0,0,.60),
+    0 0 64px color-mix(in srgb, var(--tierGlow) 85%, transparent),
+    0 0 0 1px rgba(255,255,255,.12);
+}
+.modalOverlay .storeModal .avatarCard.isOwned::before{
+  opacity:.78;
+}
+
+/* Media + info polish (no sizing changes) */
+.modalOverlay .storeModal .avatarMedia{
+  background: rgba(0,0,0,.30);
+}
+.modalOverlay .storeModal .avatarInfo .avatarName{
+  letter-spacing: .2px;
+}
+.modalOverlay .storeModal .avatarMeta .pill{
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.05);
+}
+
+/* Buttons: keep existing behavior; add glow when buy-able */
+.modalOverlay .storeModal .btn.coinBtn{
+  box-shadow:
+    0 0 0 1px rgba(245,158,11,.10),
+    0 0 22px rgba(245,158,11,.18);
+}
+.modalOverlay .storeModal .btn.ghostBtn{
+  box-shadow: none;
+}
+
+/* Accessibility: reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .modalOverlay .storeModal .avatarCard,
+  .modalOverlay .storeModal .avatarCard .avatarGlow{
+    animation: none !important;
+    transition: none !important;
+  }
+}
