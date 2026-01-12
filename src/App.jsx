@@ -793,7 +793,7 @@ function doFollow(kind) {
 
           
           {!bearerToken ? (
-            <button className="btn" onClick={startConnect} onTouchStart={startConnect}>Connect Wallet</button>
+            <button className="btn" onClick={startConnect}>Connect Wallet</button>
           ) : (
             <button className="btn ghostBtn" onClick={handleResetUser} title={wallet ? `Connected: ${wallet}` : 'Connected'}>
               {wallet ? `Connected: ${wallet.slice(0,4)}…${wallet.slice(-4)}` : 'Connected'}
@@ -807,7 +807,7 @@ function doFollow(kind) {
 
           </button>
 
-          <div className="badge" style={{ pointerEvents: "none" }}>
+          <div className="badge">
 
             <span className={`dot ${statusDot}`} />
 
@@ -930,7 +930,7 @@ function doFollow(kind) {
               <input readOnly value={wallet || ''} placeholder="Connect Phantom wallet" />
               <div className="row">
                 {!bearerToken ? (
-                  <button className="btn" onClick={startConnect} onTouchStart={startConnect}>Connect Wallet</button>
+                  <button className="btn" onClick={startConnect}>Connect Wallet</button>
                 ) : (
                   <button className="btn secondary" onClick={() => handleCopy(wallet, 'wallet')} disabled={!wallet}>Copy</button>
                 )}
