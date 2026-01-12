@@ -623,3 +623,139 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
 }
 .lk{font-size:11px;color:var(--muted)}
 .lv{font-size:14px;font-weight:800;margin-top:4px}
+/* =========================
+   KUDI SKUNK — MOBILE POLISH (SAFE)
+   - Desktop/Web unchanged (only applies <= 640px)
+   - Fix: full-width layout, remove weird right gaps, unify header/buttons
+   ========================= */
+@media (max-width: 640px){
+
+  /* Prevent horizontal scroll / weird empty side areas */
+  html, body{
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* Make root take full width */
+  #root{
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Slightly calmer background on mobile for “clean” app feel */
+  body{
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(900px 520px at 20% 0%, rgba(139,92,246,.18), transparent 60%),
+    radial-gradient(780px 520px at 80% 15%, rgba(34,197,94,.08), transparent 65%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+  /* Full-width container with mobile padding */
+  .container{
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 14px;
+  }
+
+  /* Header becomes a single “app bar” block */
+  .header{
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 18px;
+    background: rgba(19,19,37,.92);
+    backdrop-filter: blur(10px);
+  }
+
+  /* Brand line stays neat */
+  .brand{
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .title{font-size: 14px;}
+
+  /* Right actions: no more floating / detached feeling */
+  .headerRight{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Trust icons shouldn’t push layout */
+  .trustIcons{
+    margin-right: 0;
+    gap: 8px;
+  }
+
+  /* Buttons: consistent height + tap-friendly */
+  .btn{
+    height: 42px;
+    padding: 0 12px;
+    font-size: 13px;
+    border-radius: 14px;
+    line-height: 42px;
+    flex: 1 1 120px;   /* 2+1 wrap when needed */
+    min-width: 0;
+  }
+
+  /* Forms: kill min-width that causes sideways overflow */
+  .field{
+    min-width: 0;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  /* Grid/cards spacing on mobile */
+  .grid{
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .card{
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  /* Hero blocks: keep everything inside screen */
+  .coinHero,
+  .leaderHero{
+    padding: 14px;
+    border-radius: 20px;
+  }
+  .coinHeroLeft{min-width: 0;}
+  .coinHeroRight,
+  .leaderArtWrap{
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+  }
+  .coinHeroImg,
+  .leaderArt{
+    max-width: 320px;
+  }
+
+  /* Leader toggle wraps nicely */
+  .leaderTop{
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Modal: comfortable on mobile */
+  .modalBg,
+  .modalOverlay{
+    padding: 12px;
+  }
+  .modal,
+  .modalCard{
+    width: 100%;
+    border-radius: 16px;
+  }
+}
