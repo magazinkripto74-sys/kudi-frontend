@@ -7,7 +7,6 @@ import "./styles/avatarstore.glass.css"
 
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 
-
 // Defaults can be overridden via .env (VITE_*)
 const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || 'https://api.mainnet-beta.solana.com'
 const USDC_MINT = import.meta.env.VITE_USDC_MINT || 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
@@ -17,6 +16,10 @@ const USDC_DECIMALS = 6
 const SESSION_KEY = 'kudi_session_id'
 const BEARER_KEY = 'kudi_bearer_token'
 const WALLET_KEY = 'kudi_wallet'
+
+// Referral storage keys
+const REF_CODE_KEY = 'kudi_referralCode'
+const refAttachedKeyForWallet = (wallet) => `kudi_ref_attached_${String(wallet || '').trim()}`
 
 function getSessionId() {
   try {
@@ -35,13 +38,6 @@ function getSessionId() {
 
 function setSessionId(next) {
   try { sessionStorage.setItem(SESSION_KEY, next) } catch {}
-}
-
-function uid() {
-  // short, readable id
-  const s = Math.random().toString(36).slice(2, 10)
-  const t = Date.now().toString(36).slice(-4)
-  return `u_${s}${t}`
 }
 
 function safeJson(text) {
@@ -68,7 +64,6 @@ async function api(path, { method = 'GET', body, _retried } = {}) {
   const data = safeJson(txt)
 
   // KSR-02: if server replies 409 with expectedSessionId, switch + retry once.
-  // (Server is the single source of truth for the active session per userId.)
   if (res.status === 409 && data?.expectedSessionId && !_retried) {
     const expected = String(data.expectedSessionId || '')
     if (expected && expected !== getSessionId()) setSessionId(expected)
@@ -82,7 +77,6 @@ async function api(path, { method = 'GET', body, _retried } = {}) {
   return data ?? {}
 }
 
-
 function mapReferralError(code) {
   const c = String(code || '').trim()
   if (!c) return 'Something went wrong.'
@@ -91,10 +85,8 @@ function mapReferralError(code) {
   if (c === 'missing_refCode') return 'Please enter a referral code.'
   if (c === 'invalid_token') return 'Session expired. Please reconnect your wallet.'
   if (c === 'already_attached' || c === 'alreadyAttached') return 'ℹ️ Referral already attached.'
-  // Fallback: show raw code (developer-friendly)
   return `Referral error: ${c}`
 }
-
 
 function mapCashoutError(code) {
   const c = String(code || '').trim()
@@ -109,6 +101,7 @@ function mapCashoutError(code) {
   if (c === 'transfer_failed') return 'Transfer failed. Try again.'
   return c
 }
+
 function mapNicknameError(code) {
   const c = String(code || '').trim()
   if (!c) return 'Something went wrong.'
@@ -119,8 +112,6 @@ function mapNicknameError(code) {
   return `Nickname error: ${c}`
 }
 
-
-
 function moneyUsdc(n) {
   const num = Number(n || 0)
   const fixed = (Math.round(num * 100) / 100).toFixed(2)
@@ -130,14 +121,36 @@ function moneyUsdc(n) {
 function copyToClipboard(value) {
   return navigator.clipboard?.writeText(value)
 }
+
 function sanitizeNickname(raw) {
   const s = String(raw || '').trim().replace(/^@+/, '')
   const cleaned = s.replace(/[^a-zA-Z0-9_]/g, '')
   return cleaned.slice(0, 15)
 }
 
+function isValidRefCode(raw) {
+  const s = String(raw || '').trim()
+  if (!s) return false
+  // Accept REF-XXXX style (letters/digits, allow lowercase too)
+  return /^REF-[A-Z0-9]+$/i.test(s)
+}
 
-
+function readRefFromUrlAndClean() {
+  try {
+    const url = new URL(window.location.href)
+    const refFromUrl = (url.searchParams.get('ref') || '').trim()
+    if (refFromUrl) {
+      // clean URL (remove ?ref=...)
+      try {
+        url.searchParams.delete('ref')
+        window.history.replaceState({}, '', url.toString())
+      } catch {}
+    }
+    return refFromUrl
+  } catch {
+    return ''
+  }
+}
 
 // === BUY 4T COIN (LOCKED URLs) ===
 const PUMP_FUN_URL =
@@ -162,26 +175,31 @@ const TRUST_LINKS = {
   mail: 'mailto:4tfourt2025@gmail.com',
 }
 
-
 export default function App() {
   const [wallet, setWallet] = useState('')
   const [bearerToken, setBearerToken] = useState('')
   const [pendingLogin, setPendingLogin] = useState(null) // { wallet, token, message }
   const [termsOk, setTermsOk] = useState(false)
   const [isConnectOpen, setIsConnectOpen] = useState(false)
+
+  // Referral
   const [referralCode, setReferralCode] = useState('')
+
   const [selectedPackage, setSelectedPackage] = useState('PRO')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState('')
   const [summary, setSummary] = useState(null)
+
   // Nickname (server-backed, fixed-slot UI)
   const [nickDraft, setNickDraft] = useState('')
   const [nickEditing, setNickEditing] = useState(false)
   const [nickSaving, setNickSaving] = useState(false)
   const [nickMsg, setNickMsg] = useState('')
+
   const [cashoutAmount, setCashoutAmount] = useState('')
   const [cashoutLoading, setCashoutLoading] = useState(false)
   const [cashoutMsg, setCashoutMsg] = useState('')
+
   const [dailyTapMsg, setDailyTapMsg] = useState('')
   const [dailyTapLoading, setDailyTapLoading] = useState(false)
   const [checkinMsg, setCheckinMsg] = useState('')
@@ -190,7 +208,6 @@ export default function App() {
   const [kudiPushLoading, setKudiPushLoading] = useState(false)
   const [miniMsg, setMiniMsg] = useState('')
   const [miniLoading, setMiniLoading] = useState(false)
-
 
   // Leaderboard (server-backed, UTC daily reset)
   const [leaderMode, setLeaderMode] = useState('today') // 'today' | 'alltime'
@@ -205,7 +222,6 @@ export default function App() {
   const kudiPushDoneToday = (summary?.dailyKudiPushLast || '') === todayKey
   const miniDoneToday = (summary?.dailyMiniChallengeLast || '') === todayKey
 
-
   const [isBuyCoinOpen, setIsBuyCoinOpen] = useState(false)
   const [isAvatarStoreOpen, setIsAvatarStoreOpen] = useState(false)
 
@@ -213,30 +229,9 @@ export default function App() {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false)
 
-
-  // Initial load: restore wallet/token, remember referral code (from URL or storage).
-  useEffect(() => {
-    try {
-      const savedWallet = localStorage.getItem(WALLET_KEY) || ''
-      const savedBearer = localStorage.getItem(BEARER_KEY) || ''
-      if (savedWallet) setWallet(savedWallet)
-      if (savedBearer) setBearerToken(savedBearer)
-    } catch {}
-
-    const storedRef = (localStorage.getItem('kudi_referralCode') || '').trim()
-    const url = new URL(window.location.href)
-    const refFromUrl = (url.searchParams.get('ref') || '').trim()
-    const finalRef = refFromUrl || storedRef
-    if (finalRef) {
-      setReferralCode(finalRef)
-      try { localStorage.setItem('kudi_referralCode', finalRef) } catch {}
-    }
-  }, [])
-
   // One-time social follow tasks (gate before other tasks)
   const [followDone, setFollowDone] = useState({ x: false, telegram: false, instagram: false })
   const [followAllDone, setFollowAllDone] = useState(false)
-
 
   const hasNickname = !!(summary?.nickname && String(summary.nickname).trim())
   const isDailyChampion = !!(summary?.dailyChampionUntil && Date.parse(String(summary.dailyChampionUntil)) > Date.now())
@@ -247,56 +242,60 @@ export default function App() {
   const lb2 = leaderTop3.find(r => r.rank === 2) || null
   const lb3 = leaderTop3.find(r => r.rank === 3) || null
   const lbLabel = leaderMode === 'alltime' ? 'All-time' : 'Today'
-const inviteLink = useMemo(() => {
+
+  const inviteLink = useMemo(() => {
     const code = summary?.refCode || summary?.myReferralCode
     if (!code) return ''
     return `${window.location.origin}/?ref=${encodeURIComponent(code)}`
   }, [summary?.refCode, summary?.myReferralCode])
 
+  const makeSharePayload = () => {
+    const url = inviteLink || TRUST_LINKS.web || window.location.origin
+    const text = `KUDI SKUNK — join my lobby. Use my invite link: ${url}`
+    return { url, text }
+  }
 
-const makeSharePayload = () => {
-  const url = inviteLink || TRUST_LINKS.web || window.location.origin
-  const text = `KUDI SKUNK — join my lobby. Use my invite link: ${url}`
-  return { url, text }
-}
+  const shareX = () => {
+    const { url, text } = makeSharePayload()
+    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+    window.open(intent, '_blank', 'noopener,noreferrer')
+  }
 
-const shareX = () => {
-  const { url, text } = makeSharePayload()
-  const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
-  window.open(intent, '_blank', 'noopener,noreferrer')
-}
+  const shareTelegram = () => {
+    const { url, text } = makeSharePayload()
+    const tg = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
+    window.open(tg, '_blank', 'noopener,noreferrer')
+  }
 
-const shareTelegram = () => {
-  const { url, text } = makeSharePayload()
-  const tg = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
-  window.open(tg, '_blank', 'noopener,noreferrer')
-}
+  const shareWhatsApp = () => {
+    const { url, text } = makeSharePayload()
+    const wa = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`
+    window.open(wa, '_blank', 'noopener,noreferrer')
+  }
 
-const shareWhatsApp = () => {
-  const { url, text } = makeSharePayload()
-  const wa = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`
-  window.open(wa, '_blank', 'noopener,noreferrer')
-}
-
+  // ======= INIT (single source of truth) =======
   useEffect(() => {
-    const storedRef = localStorage.getItem('kudi_referralCode') || ''
-    const url = new URL(window.location.href)
-    const refFromUrl = url.searchParams.get('ref') || ''
-    const finalRef = refFromUrl || storedRef
-    setReferralCode(finalRef)
-    if (finalRef) localStorage.setItem('kudi_referralCode', finalRef)
-
-    // keep URL clean
-    if (refFromUrl) {
-      url.searchParams.delete('ref')
-      window.history.replaceState({}, '', url.toString())
-    }
+    // ensure a session exists before any API call
+    getSessionId()
 
     // restore auth if present
-    const savedWallet = localStorage.getItem(WALLET_KEY) || ''
-    const savedBearer = getBearer()
-    if (savedWallet) setWallet(savedWallet)
-    if (savedBearer) setBearerToken(savedBearer)
+    try {
+      const savedWallet = localStorage.getItem(WALLET_KEY) || ''
+      const savedBearer = localStorage.getItem(BEARER_KEY) || ''
+      if (savedWallet) setWallet(savedWallet)
+      if (savedBearer) setBearerToken(savedBearer)
+    } catch {}
+
+    // referral: URL ref wins, then localStorage
+    const refFromUrl = readRefFromUrlAndClean()
+    const storedRef = (() => {
+      try { return (localStorage.getItem(REF_CODE_KEY) || '').trim() } catch { return '' }
+    })()
+    const finalRef = (refFromUrl || storedRef || '').trim()
+    if (finalRef) {
+      setReferralCode(finalRef)
+      try { localStorage.setItem(REF_CODE_KEY, finalRef) } catch {}
+    }
 
     // one-time follow tasks
     const savedFollow = safeJson(localStorage.getItem('kudi_follow_tasks_done') || '') || null
@@ -305,22 +304,15 @@ const shareWhatsApp = () => {
       setFollowDone(next)
       setFollowAllDone(!!(next.x && next.telegram && next.instagram))
     }
-
-    // ensure a session exists before any API call
-    getSessionId()
   }, [])
-
-
-  
 
   useEffect(() => {
     if (!isAvatarStoreOpen) return
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = prev
-    }
+    return () => { document.body.style.overflow = prev }
   }, [isAvatarStoreOpen])
+
   useEffect(() => {
     if (!bearerToken) return
     refresh()
@@ -335,13 +327,18 @@ const shareWhatsApp = () => {
 
   useEffect(() => {
     if (leaderMode !== 'today') return
-    const t = setInterval(() => {
-      loadLeaderboard('today')
-    }, 60000)
+    const t = setInterval(() => { loadLeaderboard('today') }, 60000)
     return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [leaderMode])
 
+  // Keep nickname draft in sync with server summary (unless actively editing)
+  useEffect(() => {
+    const current = (summary?.nickname || '').trim()
+    if (nickEditing) return
+    setNickDraft(current)
+    setNickMsg('')
+  }, [summary?.nickname])
 
   async function refresh() {
     try {
@@ -354,7 +351,7 @@ const shareWhatsApp = () => {
 
   async function refreshSummary() {
     await refresh()
-  }  
+  }
 
   async function loadLeaderboard(mode = leaderMode) {
     const m = mode === 'alltime' ? 'alltime' : 'today'
@@ -373,23 +370,53 @@ const shareWhatsApp = () => {
     }
   }
 
-// Keep nickname draft in sync with server summary (unless actively editing)
-  useEffect(() => {
-    const current = (summary?.nickname || '').trim()
-    if (nickEditing) return
-    setNickDraft(current)
-    setNickMsg('')
-  }, [summary?.nickname])
+  // ======= Referral attach (single point, safe, one-time) =======
+  async function maybeAttachReferral({ wallet: w, referral, summaryObj }) {
+    const code = String(referral || '').trim()
+    if (!code) return
+    if (!isValidRefCode(code)) return
 
+    // If server already has upline, mark attached and exit
+    if (summaryObj?.uplineWallet) {
+      try { localStorage.setItem(refAttachedKeyForWallet(w), '1') } catch {}
+      return
+    }
 
+    // If already attached locally for this wallet, do not call again
+    try {
+      const key = refAttachedKeyForWallet(w)
+      if (localStorage.getItem(key) === '1') return
+    } catch {}
 
+    try {
+      const r = await api('/referral/attach', { method: 'POST', body: { refCode: code } })
+      // success (silent) — only set local flag
+      try { localStorage.setItem(refAttachedKeyForWallet(w), '1') } catch {}
+      // If server replies alreadyAttached, also mark
+      if (r?.alreadyAttached) {
+        try { localStorage.setItem(refAttachedKeyForWallet(w), '1') } catch {}
+      }
+    } catch (e) {
+      // Only show errors (no success toast spam)
+      setToast(mapReferralError(e?.message))
+    }
+  }
 
   async function startConnect() {
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+
     setToast('')
     setTermsOk(false)
     try {
       const sol = window?.solana
       if (!sol || !sol.isPhantom) {
+        // Mobile browsers won't have window.solana. Open the dApp inside Phantom.
+        if (isMobile) {
+          const here = window.location.href
+          // Open inside Phantom browser
+          window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(here)}`
+          return
+        }
         setToast('Phantom wallet not found. Please install Phantom and refresh.')
         return
       }
@@ -452,28 +479,36 @@ const shareWhatsApp = () => {
       }
 
       const bearer = data?.bearerToken || pendingLogin.token
-      setWallet(pendingLogin.wallet)
+      const w = pendingLogin.wallet
+
+      setWallet(w)
       setBearerToken(bearer)
       try {
-        localStorage.setItem(WALLET_KEY, pendingLogin.wallet)
+        localStorage.setItem(WALLET_KEY, w)
         localStorage.setItem(BEARER_KEY, bearer)
       } catch {}
 
       setIsConnectOpen(false)
       setPendingLogin(null)
 
-      // Referral attach (safe + visible)
-      if (referralCode) {
-        try {
-          const r = await api('/referral/attach', { method: 'POST', body: { refCode: referralCode } })
-          if (r?.alreadyAttached) setToast('ℹ️ Referral already attached.')
-          else setToast('✅ Referral attached.')
-        } catch (e) {
-          setToast(mapReferralError(e.message))
-        }
+      // Pull summary first (so we know if already attached on server)
+      let freshSummary = null
+      try {
+        const r = await api('/me/summary')
+        freshSummary = r || null
+        setSummary(freshSummary)
+      } catch (e) {
+        // If summary fails, still continue; referral attach can be tried safely
+        freshSummary = null
       }
+
+      // Referral attach: one safe point, one-time
+      await maybeAttachReferral({ wallet: w, referral: referralCode, summaryObj: freshSummary })
+
+      // Refresh summary after attach attempt (to reflect uplineWallet if attached)
       await refresh()
-      // Do not overwrite referral result toast.
+
+      // Keep success toast minimal (do not overwrite referral errors)
       if (!referralCode) setToast('✅ Wallet connected.')
     } catch (e) {
       setToast(e?.message || 'Auth failed')
@@ -501,8 +536,6 @@ const shareWhatsApp = () => {
     }
   }
 
-
-  
   async function handleDailyCheckin() {
     if (!bearerToken) return
     setCheckinLoading(true)
@@ -566,7 +599,7 @@ const shareWhatsApp = () => {
     }
   }
 
-async function handleBuy() {
+  async function handleBuy() {
     if (!bearerToken) return
     const provider = window?.solana
     if (!provider?.isPhantom) {
@@ -638,31 +671,18 @@ async function handleBuy() {
 
   async function handleSaveRef() {
     const code = (referralCode || '').trim()
-    try { localStorage.setItem('kudi_referralCode', code) } catch {}
+    try { localStorage.setItem(REF_CODE_KEY, code) } catch {}
 
-    // If user is not connected, only store locally (no validation claim).
-    if (!bearerToken) {
-      setToast(code ? 'Saved locally. Connect wallet to validate.' : 'Referral code cleared.')
-      return
-    }
-
-    // Connected: validate by calling backend.
+    // NEW RULE: Save only locally. Attach is done automatically after wallet connect.
     if (!code) {
-      setToast(mapReferralError('missing_refCode'))
+      setToast('Referral code cleared.')
       return
     }
-
-    setLoading(true)
-    try {
-      const r = await api('/referral/attach', { method: 'POST', body: { refCode: code } })
-      if (r?.alreadyAttached) setToast('ℹ️ Referral already attached.')
-      else setToast('✅ Referral attached.')
-      await refresh()
-    } catch (e) {
-      setToast(mapReferralError(e?.message))
-    } finally {
-      setLoading(false)
+    if (!isValidRefCode(code)) {
+      setToast('Invalid referral code format. Use REF-XXXX')
+      return
     }
+    setToast('✅ Referral saved. Connect wallet to validate.')
   }
 
   function handleResetUser() {
@@ -685,6 +705,7 @@ async function handleBuy() {
       setToast('Copy failed (browser blocked clipboard).')
     }
   }
+
   async function handleSaveNickname() {
     setNickMsg('')
     if (!bearerToken) {
@@ -729,29 +750,24 @@ async function handleBuy() {
     setNickMsg('')
   }
 
+  function setFollowFlag(kind) {
+    const next = { ...followDone, [kind]: true }
+    setFollowDone(next)
+    const all = !!(next.x && next.telegram && next.instagram)
+    setFollowAllDone(all)
+    localStorage.setItem('kudi_follow_tasks_done', JSON.stringify(next))
+    if (all) setToast('✅ Social tasks completed. Daily tasks unlocked.')
+    else setToast('✅ Task completed.')
+  }
 
-
-
-
-function setFollowFlag(kind) {
-  const next = { ...followDone, [kind]: true }
-  setFollowDone(next)
-  const all = !!(next.x && next.telegram && next.instagram)
-  setFollowAllDone(all)
-  localStorage.setItem('kudi_follow_tasks_done', JSON.stringify(next))
-  if (all) setToast('✅ Social tasks completed. Daily tasks unlocked.')
-  else setToast('✅ Task completed.')
-}
-
-function doFollow(kind) {
-  if (kind === 'x') openExternal(TRUST_LINKS.x)
-  else if (kind === 'telegram') openExternal(TRUST_LINKS.telegram)
-  else if (kind === 'instagram') openExternal(TRUST_LINKS.instagram)
-  setFollowFlag(kind)
-}
+  function doFollow(kind) {
+    if (kind === 'x') openExternal(TRUST_LINKS.x)
+    else if (kind === 'telegram') openExternal(TRUST_LINKS.telegram)
+    else if (kind === 'instagram') openExternal(TRUST_LINKS.instagram)
+    setFollowFlag(kind)
+  }
 
   const statusDot = summary ? 'good' : 'bad'
-
 
   const ep = Number(summary?.ep ?? 0)
   const tier = String(summary?.careerTier || 'K0')
@@ -781,17 +797,14 @@ function doFollow(kind) {
         </div>
         <div className="headerRight">
 
+          <div className="trustIcons">
+            <a href={TRUST_LINKS.x} target="_blank" rel="noopener noreferrer" title="Official X">𝕏</a>
+            <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram">📸</a>
+            <a href={TRUST_LINKS.telegram} target="_blank" rel="noopener noreferrer" title="Telegram">✈️</a>
+            <a href={TRUST_LINKS.web} target="_blank" rel="noopener noreferrer" title="Website">🌐</a>
+            <a href={TRUST_LINKS.mail} title="Contact">✉️</a>
+          </div>
 
-<div className="trustIcons">
-      <a href={TRUST_LINKS.x} target="_blank" rel="noopener noreferrer" title="Official X">𝕏</a>
-      <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram">📸</a>
-      <a href={TRUST_LINKS.telegram} target="_blank" rel="noopener noreferrer" title="Telegram">✈️</a>
-      <a href={TRUST_LINKS.web} target="_blank" rel="noopener noreferrer" title="Website">🌐</a>
-      <a href={TRUST_LINKS.mail} title="Contact">✉️</a>
-    </div>
-
-
-          
           {!bearerToken ? (
             <button className="btn" onClick={startConnect}>Connect Wallet</button>
           ) : (
@@ -801,25 +814,19 @@ function doFollow(kind) {
           )}
 
           <button className="btn ghostBtn" onClick={() => setIsAvatarStoreOpen(true)}>Avatar Store</button>
-<button className="btn coinBtn" onClick={() => setIsBuyCoinOpen(true)}>
-
+          <button className="btn coinBtn" onClick={() => setIsBuyCoinOpen(true)}>
             BUY 4T COIN
-
           </button>
 
           <div className="badge">
-
             <span className={`dot ${statusDot}`} />
-
             <span className="mono">{API_BASE}</span>
-
           </div>
 
         </div>
       </div>
 
       <div className="leaderHero">
-        
         <div className="leaderBox">
           <div className="leaderTop">
             <div>
@@ -848,16 +855,16 @@ function doFollow(kind) {
           </div>
 
           <div className="podium">
-            <div className="podiumRow silver">
-              <div className="podiumRank">🥈</div>
-              <div className="podiumName">{lb2 ? `${lb2.name}${lb2.isChampion ? ' 🎖️' : ''}` : '—'}</div>
-              <div className="podiumScore">{lb2 ? `${lb2.score} REF` : '0 REF'}</div>
-            </div>
-
             <div className="podiumRow gold">
               <div className="podiumRank">🥇</div>
               <div className="podiumName">{lb1 ? `${lb1.name}${lb1.isChampion ? ' 🎖️' : ''}` : '—'}</div>
               <div className="podiumScore">{lb1 ? `${lb1.score} REF` : '0 REF'}</div>
+            </div>
+
+            <div className="podiumRow silver">
+              <div className="podiumRank">🥈</div>
+              <div className="podiumName">{lb2 ? `${lb2.name}${lb2.isChampion ? ' 🎖️' : ''}` : '—'}</div>
+              <div className="podiumScore">{lb2 ? `${lb2.score} REF` : '0 REF'}</div>
             </div>
 
             <div className="podiumRow bronze">
@@ -875,50 +882,49 @@ function doFollow(kind) {
         </div>
       </div>
 
-<div className="taskStack">
-  <div className="taskCard">
-    <div className="taskTop">
-      <div>
-        <div className="taskTitle">First Task (One-time)</div>
-        <div className="taskSub">Follow our official channels once to unlock daily tasks.</div>
+      <div className="taskStack">
+        <div className="taskCard">
+          <div className="taskTop">
+            <div>
+              <div className="taskTitle">First Task (One-time)</div>
+              <div className="taskSub">Follow our official channels once to unlock daily tasks.</div>
+            </div>
+            <div className={`taskPill ${followAllDone ? 'done' : ''}`}>{followAllDone ? 'DONE' : 'LOCK'}</div>
+          </div>
+
+          <div className="taskBtns">
+            <button className={`btn secondary ${followDone.x ? 'isDone' : ''}`} onClick={() => doFollow('x')} disabled={followDone.x}>
+              {followDone.x ? '✓ X followed' : 'Follow X'}
+            </button>
+            <button className={`btn secondary ${followDone.telegram ? 'isDone' : ''}`} onClick={() => doFollow('telegram')} disabled={followDone.telegram}>
+              {followDone.telegram ? '✓ Telegram joined' : 'Join Telegram'}
+            </button>
+            <button className={`btn secondary ${followDone.instagram ? 'isDone' : ''}`} onClick={() => doFollow('instagram')} disabled={followDone.instagram}>
+              {followDone.instagram ? '✓ Instagram followed' : 'Follow Instagram'}
+            </button>
+          </div>
+
+          <div className="taskNote">One-time only. No spam.</div>
+        </div>
+
+        <div className={`taskCard ${followAllDone ? '' : 'isLocked'}`}>
+          <div className="taskTop">
+            <div>
+              <div className="taskTitle">Daily Viral Task</div>
+              <div className="taskSub">Share on X / Telegram / WhatsApp to at least <b>5 friends</b>.</div>
+            </div>
+            <div className="taskPill">DAILY</div>
+          </div>
+
+          <div className="taskBtns">
+            <button className="btn secondary" onClick={shareX} disabled={!canShare}>Share on X</button>
+            <button className="btn secondary" onClick={shareTelegram} disabled={!canShare}>Share on Telegram</button>
+            <button className="btn secondary" onClick={shareWhatsApp} disabled={!canShare}>Share on WhatsApp</button>
+          </div>
+
+          {!followAllDone ? <div className="taskLockHint">Complete the one-time follow task first.</div> : (!hasNickname ? <div className="taskLockHint">Create a nickname to unlock sharing.</div> : null)}
+        </div>
       </div>
-      <div className={`taskPill ${followAllDone ? 'done' : ''}`}>{followAllDone ? 'DONE' : 'LOCK'}</div>
-    </div>
-
-    <div className="taskBtns">
-      <button className={`btn secondary ${followDone.x ? 'isDone' : ''}`} onClick={() => doFollow('x')} disabled={followDone.x}>
-        {followDone.x ? '✓ X followed' : 'Follow X'}
-      </button>
-      <button className={`btn secondary ${followDone.telegram ? 'isDone' : ''}`} onClick={() => doFollow('telegram')} disabled={followDone.telegram}>
-        {followDone.telegram ? '✓ Telegram joined' : 'Join Telegram'}
-      </button>
-      <button className={`btn secondary ${followDone.instagram ? 'isDone' : ''}`} onClick={() => doFollow('instagram')} disabled={followDone.instagram}>
-        {followDone.instagram ? '✓ Instagram followed' : 'Follow Instagram'}
-      </button>
-    </div>
-
-    <div className="taskNote">One-time only. No spam.</div>
-  </div>
-
-  <div className={`taskCard ${followAllDone ? '' : 'isLocked'}`}>
-    <div className="taskTop">
-      <div>
-        <div className="taskTitle">Daily Viral Task</div>
-        <div className="taskSub">Share on X / Telegram / WhatsApp to at least <b>5 friends</b>.</div>
-      </div>
-      <div className="taskPill">DAILY</div>
-    </div>
-
-    <div className="taskBtns">
-      <button className="btn secondary" onClick={shareX} disabled={!canShare}>Share on X</button>
-      <button className="btn secondary" onClick={shareTelegram} disabled={!canShare}>Share on Telegram</button>
-      <button className="btn secondary" onClick={shareWhatsApp} disabled={!canShare}>Share on WhatsApp</button>
-    </div>
-
-    {!followAllDone ? <div className="taskLockHint">Complete the one-time follow task first.</div> : (!hasNickname ? <div className="taskLockHint">Create a nickname to unlock sharing.</div> : null)}
-  </div>
-</div>
-
 
       <div className="grid">
         <div className="card">
@@ -1048,7 +1054,6 @@ function doFollow(kind) {
             </div>
           </div>
 
-
           {toast ? <div className="toast">{toast}</div> : null}
         </div>
 
@@ -1126,8 +1131,8 @@ function doFollow(kind) {
               <label>Career Cash Earned</label>
               <input readOnly value={moneyUsdc(summary?.usdAvailable ?? 0)} />
             </div>
-            
-<div className="field">
+
+            <div className="field">
               <label>Withdraw (min 10 / max 500 per day)</label>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input
@@ -1147,6 +1152,7 @@ function doFollow(kind) {
               </div>
               {cashoutMsg ? <div className="hint">{cashoutMsg}</div> : null}
             </div>
+
             <div className="field">
               <label>My Referral Code</label>
               <input readOnly value={summary?.refCode || ''} placeholder="(available after connect)" />
@@ -1178,19 +1184,19 @@ function doFollow(kind) {
         </div>
       </div>
 
+      <div className="footer">
+        <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsTermsOpen(true)}}>Terms</a>
+        <span>•</span>
+        <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsPrivacyOpen(true)}}>Privacy</a>
+        <span>•</span>
+        <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsHowToPlayOpen(true)}}>How to Play</a>
+        <span>•</span>
+        <a href={TRUST_LINKS.mail} className="footLink">Contact</a>
+      </div>
 
-<div className="footer">
-  <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsTermsOpen(true)}}>Terms</a>
-  <span>•</span>
-  <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsPrivacyOpen(true)}}>Privacy</a>
-  <span>•</span>
-  <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsHowToPlayOpen(true)}}>How to Play</a>
-  <span>•</span>
-  <a href={TRUST_LINKS.mail} className="footLink">Contact</a>
-</div>
       {isConnectOpen ? (
-        <div className="modalBg" onMouseDown={() => { setIsConnectOpen(false); setPendingLogin(null) }}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsConnectOpen(false); setPendingLogin(null) } }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modalTop">
               <div>
                 <div className="modalTitle">Terms & Wallet Signature</div>
@@ -1238,8 +1244,8 @@ function doFollow(kind) {
       ) : null}
 
       {isBuyCoinOpen ? (
-        <div className="modalBg" onMouseDown={() => setIsBuyCoinOpen(false)}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+        <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsBuyCoinOpen(false) } }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modalTop">
               <div>
                 <div className="modalTitle">Buy 4T Coin</div>
@@ -1281,144 +1287,140 @@ function doFollow(kind) {
         </div>
       ) : null}
 
-
-
-
-{isTermsOpen ? (
-  <div className="modalBg" onMouseDown={() => setIsTermsOpen(false)}>
-    <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-      <div className="modalTop">
-        <div>
-          <div className="modalTitle">Terms & Conditions</div>
-          <div className="modalSub">Please read carefully.</div>
+      {isTermsOpen ? (
+        <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsTermsOpen(false) } }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modalTop">
+              <div>
+                <div className="modalTitle">Terms & Conditions</div>
+                <div className="modalSub">Please read carefully.</div>
+              </div>
+              <button className="xBtn" onClick={() => setIsTermsOpen(false)}>✕</button>
+            </div>
+            <div className="modalBody" style={{maxHeight:'60vh', overflow:'auto'}}>
+              <p><b>KUDI SKUNK</b> is an experimental entertainment product. It is not a bank, exchange, broker, or investment service.</p>
+              <p><b>USDC balances shown in the dashboard are ledger entries</b> used for internal accounting of rewards. Availability of withdrawals, limits, and rules may change as the product evolves.</p>
+              <p>You are solely responsible for your wallet security, transactions, network fees, and any taxes or legal/compliance obligations in your jurisdiction.</p>
+              <p>We make no warranties and provide the service “as is”. We do not guarantee profit, availability, uninterrupted service, or refunds.</p>
+              <p>Daily energy claims, packages, and rewards may be changed, limited, or removed at any time to protect system balance.</p>
+              <p>We do not guarantee uninterrupted access, future availability of items, or continued operation of the platform.</p>
+              <p>Any abuse, automation, or exploitation may result in restriction or loss of access without notice.</p>
+              <p><i>This platform is provided “as is” without warranties of any kind.</i></p>
+            </div>
+            <div className="modalBottom">
+              <button className="btn secondary" onClick={() => setIsTermsOpen(false)}>Close</button>
+            </div>
+          </div>
         </div>
-        <button className="xBtn" onClick={() => setIsTermsOpen(false)}>✕</button>
-      </div>
-      <div className="modalBody" style={{maxHeight:'60vh', overflow:'auto'}}>
-        <p><b>KUDI SKUNK</b> is an experimental entertainment product. It is not a bank, exchange, broker, or investment service.</p>
-        <p><b>USDC balances shown in the dashboard are ledger entries</b> used for internal accounting of rewards. Availability of withdrawals, limits, and rules may change as the product evolves.</p>
-        <p>You are solely responsible for your wallet security, transactions, network fees, and any taxes or legal/compliance obligations in your jurisdiction.</p>
-        <p>We make no warranties and provide the service “as is”. We do not guarantee profit, availability, uninterrupted service, or refunds.</p>
-        <p>Daily energy claims, packages, and rewards may be changed, limited, or removed at any time to protect system balance.</p>
-        <p>We do not guarantee uninterrupted access, future availability of items, or continued operation of the platform.</p>
-        <p>Any abuse, automation, or exploitation may result in restriction or loss of access without notice.</p>
-        <p><i>This platform is provided “as is” without warranties of any kind.</i></p>
-      </div>
-      <div className="modalBottom">
-        <button className="btn secondary" onClick={() => setIsTermsOpen(false)}>Close</button>
-      </div>
-    </div>
-  </div>
-) : null}
+      ) : null}
 
-
-{isPrivacyOpen ? (
-  <div className="modalBg" onMouseDown={() => setIsPrivacyOpen(false)}>
-    <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-      <div className="modalTop">
-        <div>
-          <div className="modalTitle">Privacy Policy</div>
-          <div className="modalSub">Your data, your control.</div>
+      {isPrivacyOpen ? (
+        <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsPrivacyOpen(false) } }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modalTop">
+              <div>
+                <div className="modalTitle">Privacy Policy</div>
+                <div className="modalSub">Your data, your control.</div>
+              </div>
+              <button className="xBtn" onClick={() => setIsPrivacyOpen(false)}>✕</button>
+            </div>
+            <div className="modalBody" style={{maxHeight:'60vh', overflow:'auto'}}>
+              <p>KUDI SKUNK respects your privacy.</p>
+              <p>We only store the minimum data required to operate the platform, such as wallet address, nickname, and gameplay progress.</p>
+              <p>No personal identity information is collected.</p>
+              <p>User data is not sold, shared, or distributed to third parties.</p>
+              <p>Data may be stored locally in your browser or on our servers solely for gameplay functionality.</p>
+              <p>By using the platform, you consent to this data usage.</p>
+            </div>
+            <div className="modalBottom">
+              <button className="btn secondary" onClick={() => setIsPrivacyOpen(false)}>Close</button>
+            </div>
+          </div>
         </div>
-        <button className="xBtn" onClick={() => setIsPrivacyOpen(false)}>✕</button>
-      </div>
-      <div className="modalBody" style={{maxHeight:'60vh', overflow:'auto'}}>
-        <p>KUDI SKUNK respects your privacy.</p>
-        <p>We only store the minimum data required to operate the platform, such as wallet address, nickname, and gameplay progress.</p>
-        <p>No personal identity information is collected.</p>
-        <p>User data is not sold, shared, or distributed to third parties.</p>
-        <p>Data may be stored locally in your browser or on our servers solely for gameplay functionality.</p>
-        <p>By using the platform, you consent to this data usage.</p>
-      </div>
-      <div className="modalBottom">
-        <button className="btn secondary" onClick={() => setIsPrivacyOpen(false)}>Close</button>
-      </div>
-    </div>
-  </div>
-) : null}
+      ) : null}
 
-{isHowToPlayOpen ? (
-  <div className="modalBg" onMouseDown={() => setIsHowToPlayOpen(false)}>
-    <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-      <div className="modalTop">
-        <div>
-          <div className="modalTitle">How to Play</div>
-          <div className="modalSub">Referral (L1/L2) + KUDI Baba basics.</div>
+      {isHowToPlayOpen ? (
+        <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsHowToPlayOpen(false) } }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modalTop">
+              <div>
+                <div className="modalTitle">How to Play</div>
+                <div className="modalSub">Referral (L1/L2) + KUDI Baba basics.</div>
+              </div>
+              <button className="xBtn" onClick={() => setIsHowToPlayOpen(false)}>✕</button>
+            </div>
+
+            <div className="modalBody" style={{maxHeight:'60vh', overflow:'auto'}}>
+              <h3 style={{marginTop:0}}>Welcome to KUDI</h3>
+              <p>
+                KUDI is a social-first game where you grow your <b>KUDI Baba</b>, complete daily actions,
+                and earn rewards by inviting others.
+              </p>
+
+              <h3>1) Your KUDI Baba (Avatar Game)</h3>
+              <ul>
+                <li>Connect your Solana wallet to create your profile.</li>
+                <li>Your <b>KUDI Baba</b> avatar is your in-game identity.</li>
+                <li>Customize your look with items from the <b>Avatar Store</b>.</li>
+                <li>Your progress is linked to your wallet, so you can return anytime.</li>
+              </ul>
+
+              <h3>2) Daily Gameplay</h3>
+              <ul>
+                <li>Go to <b>Daily Tasks</b> and complete tasks to earn progress and rewards.</li>
+                <li>Some tasks are <b>once per day</b> and reset daily.</li>
+                <li>Follow the UI feedback after each claim (success / already claimed / limits).</li>
+              </ul>
+
+              <h3>3) Referral System (L1 &amp; L2)</h3>
+              <p>
+                KUDI grows through community. Share your referral code and build your network.
+                Referral rewards are calculated automatically based on your network activity.
+              </p>
+              <ul>
+                <li><b>Your Referral Code:</b> Share it with friends before they connect and join.</li>
+                <li><b>L1 (Level 1):</b> Players who join using your code. You earn a <b>5%</b> referral bonus.</li>
+                <li><b>L2 (Level 2):</b> Players invited by your L1 referrals. You earn a <b>2%</b> referral bonus.</li>
+              </ul>
+
+              <h3>4) Referral Packages &amp; Earnings</h3>
+              <p>
+                Your referral income depends on the package you own. Higher packages unlock higher referral earning power:
+              </p>
+              <ul>
+                <li><b>Starter Package:</b> <b>+10%</b> referral income</li>
+                <li><b>Pro Package:</b> <b>+20%</b> referral income</li>
+                <li><b>Elite Package:</b> <b>+25%</b> referral income</li>
+              </ul>
+
+              <p>
+                Referral bonuses are applied on top of your base rewards.
+                Any abuse (fake accounts, self-referrals, automation, or suspicious behavior)
+                may result in restriction or loss of rewards.
+              </p>
+
+              <h3>Tips</h3>
+              <ul>
+                <li>Start with daily tasks to build momentum.</li>
+                <li>Invite active players to grow a strong L1 network.</li>
+                <li>Strong L1 networks create long-term L2 benefits.</li>
+                <li>Upgrading your package increases your referral earning potential.</li>
+              </ul>
+
+              <p style={{ marginTop: 14 }}>
+                <b>Result:</b> Whoever captures KUDI Baba earns a <b>500 USDC</b> bonus and it is credited to their account.
+              </p>
+              <p className="small" style={{ marginTop: 8 }}>
+                <b>Note:</b> Daily withdrawals are limited to a minimum of <b>10 USDC</b> and a maximum of <b>500 USDC</b>.
+              </p>
+            </div>
+
+            <div className="modalBottom">
+              <button className="btn secondary" onClick={() => setIsHowToPlayOpen(false)}>Close</button>
+            </div>
+          </div>
         </div>
-        <button className="xBtn" onClick={() => setIsHowToPlayOpen(false)}>✕</button>
-      </div>
-
-      <div className="modalBody" style={{maxHeight:'60vh', overflow:'auto'}}>
-        <h3 style={{marginTop:0}}>Welcome to KUDI</h3>
-        <p>
-          KUDI is a social-first game where you grow your <b>KUDI Baba</b>, complete daily actions,
-          and earn rewards by inviting others.
-        </p>
-
-        <h3>1) Your KUDI Baba (Avatar Game)</h3>
-        <ul>
-          <li>Connect your Solana wallet to create your profile.</li>
-          <li>Your <b>KUDI Baba</b> avatar is your in-game identity.</li>
-          <li>Customize your look with items from the <b>Avatar Store</b>.</li>
-          <li>Your progress is linked to your wallet, so you can return anytime.</li>
-        </ul>
-
-        <h3>2) Daily Gameplay</h3>
-        <ul>
-          <li>Go to <b>Daily Tasks</b> and complete tasks to earn progress and rewards.</li>
-          <li>Some tasks are <b>once per day</b> and reset daily.</li>
-          <li>Follow the UI feedback after each claim (success / already claimed / limits).</li>
-        </ul>
-
-        <h3>3) Referral System (L1 &amp; L2)</h3>
-        <p>
-          KUDI grows through community. Share your referral code and build your network.
-          Referral rewards are calculated automatically based on your network activity.
-        </p>
-        <ul>
-          <li><b>Your Referral Code:</b> Share it with friends before they connect and join.</li>
-          <li><b>L1 (Level 1):</b> Players who join using your code. You earn a <b>5%</b> referral bonus.</li>
-          <li><b>L2 (Level 2):</b> Players invited by your L1 referrals. You earn a <b>2%</b> referral bonus.</li>
-        </ul>
-
-        <h3>4) Referral Packages &amp; Earnings</h3>
-        <p>
-          Your referral income depends on the package you own. Higher packages unlock higher referral earning power:
-        </p>
-        <ul>
-          <li><b>Starter Package:</b> <b>+10%</b> referral income</li>
-          <li><b>Pro Package:</b> <b>+20%</b> referral income</li>
-          <li><b>Elite Package:</b> <b>+25%</b> referral income</li>
-        </ul>
-
-        <p>
-          Referral bonuses are applied on top of your base rewards.
-          Any abuse (fake accounts, self-referrals, automation, or suspicious behavior)
-          may result in restriction or loss of rewards.
-        </p>
-
-        <h3>Tips</h3>
-        <ul>
-          <li>Start with daily tasks to build momentum.</li>
-          <li>Invite active players to grow a strong L1 network.</li>
-          <li>Strong L1 networks create long-term L2 benefits.</li>
-          <li>Upgrading your package increases your referral earning potential.</li>
-        </ul>
-<p style={{ marginTop: 14 }}>
-          <b>Result:</b> Whoever captures KUDI Baba earns a <b>500 USDC</b> bonus and it is credited to their account.
-        </p>
-        <p className="small" style={{ marginTop: 8 }}>
-          <b>Note:</b> Daily withdrawals are limited to a minimum of <b>10 USDC</b> and a maximum of <b>500 USDC</b>.
-        </p>
-      </div>
-
-      <div className="modalBottom">
-        <button className="btn secondary" onClick={() => setIsHowToPlayOpen(false)}>Close</button>
-      </div>
-    </div>
-  </div>
-) : null}
-
+      ) : null}
 
       <AvatarStore
         open={isAvatarStoreOpen}
@@ -1429,34 +1431,33 @@ function doFollow(kind) {
     </div>
   )
 
-
-async function withdrawCashout() {
-  setCashoutMsg('')
-  if (!wallet) {
-    setCashoutMsg('Connect wallet first.')
-    return
-  }
-
-  const amt = Number(cashoutAmount)
-  if (!Number.isFinite(amt)) {
-    setCashoutMsg('Enter a valid amount.')
-    return
-  }
-
-  setCashoutLoading(true)
-  try {
-    const r = await api('/cashout/withdraw', { method: 'POST', body: { amount: amt } })
-    if (r?.signature) {
-      setCashoutMsg(`✅ Withdraw sent. Tx: ${r.signature}`)
-    } else {
-      setCashoutMsg('✅ Withdraw successful.')
+  async function withdrawCashout() {
+    setCashoutMsg('')
+    if (!wallet) {
+      setCashoutMsg('Connect wallet first.')
+      return
     }
-    setCashoutAmount('')
-    await refresh()
-  } catch (e) {
-    setCashoutMsg(mapCashoutError(e?.message))
-  } finally {
-    setCashoutLoading(false)
+
+    const amt = Number(cashoutAmount)
+    if (!Number.isFinite(amt)) {
+      setCashoutMsg('Enter a valid amount.')
+      return
+    }
+
+    setCashoutLoading(true)
+    try {
+      const r = await api('/cashout/withdraw', { method: 'POST', body: { amount: amt } })
+      if (r?.signature) {
+        setCashoutMsg(`✅ Withdraw sent. Tx: ${r.signature}`)
+      } else {
+        setCashoutMsg('✅ Withdraw successful.')
+      }
+      setCashoutAmount('')
+      await refresh()
+    } catch (e) {
+      setCashoutMsg(mapCashoutError(e?.message))
+    } finally {
+      setCashoutLoading(false)
+    }
   }
-}
 }
