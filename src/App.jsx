@@ -952,7 +952,28 @@ function doFollow(kind) {
       <button className="btn secondary" onClick={shareX} disabled={!canShare}>Share on X</button>
       <button className="btn secondary" onClick={shareTelegram} disabled={!canShare}>Share on Telegram</button>
       <button className="btn secondary" onClick={shareWhatsApp} disabled={!canShare}>Share on WhatsApp</button>
-    </div>
+    
+    {bearerToken && !hasNickname ? (
+      <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <div style={{ flex: '1 1 200px' }}>
+          <label className="small" style={{ display: 'block', marginBottom: 6 }}>Nickname</label>
+          <input
+            value={nickDraft}
+            onChange={(e) => setNickDraft(e.target.value)}
+            placeholder="@yourname"
+            autoComplete="off"
+            style={{ width: '100%' }}
+          />
+          {nickMsg ? <div className="miniGameMsg" style={{ marginTop: 6 }}>{nickMsg}</div> : null}
+        </div>
+        <button className="btn" onClick={handleSaveNickname} disabled={nickSaving || !bearerToken}>
+          {nickSaving ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+    ) : null}
+
+
+</div>
 
     {!followAllDone ? <div className="taskLockHint">Complete the one-time follow task first.</div> : (!hasNickname ? <div className="taskLockHint">Create a nickname to unlock sharing.</div> : null)}
   </div>
