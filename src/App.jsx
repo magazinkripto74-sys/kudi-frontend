@@ -147,7 +147,7 @@ const MEXC_DEX_URL =
 
 function openExternal(url) {
   try {
-    openExternal(url, '_blank', 'noopener,noreferrer')
+    window.open(url, '_blank', 'noopener,noreferrer')
   } catch {
     window.location.href = url
   }
@@ -267,38 +267,39 @@ const inviteLink = useMemo(() => {
   }, [summary?.refCode, summary?.myReferralCode])
 
 
-
-const openExternal = (url) => {
-  // Mobile browsers (Safari/Chrome) may block window.open silently.
-  // Try window.open first; if blocked (returns null), fallback to same-tab navigation.
-  const w = openExternal(url, '_blank', 'noopener,noreferrer')
-  if (!w) {
-    window.location.assign(url)
-  }
-}
-
 const makeSharePayload = () => {
   const url = inviteLink || TRUST_LINKS.web || window.location.origin
   const text = `KUDI SKUNK — join my lobby. Use my invite link: ${url}`
   return { url, text }
 }
 
+const openShare = (url) => {
+  try {
+    // Mobile browsers may block popups; fall back to same-tab navigation.
+    const w = window.open(url, '_blank')
+    if (!w) window.location.assign(url)
+    else w.opener = null
+  } catch {
+    window.location.assign(url)
+  }
+}
+
 const shareX = () => {
   const { url, text } = makeSharePayload()
   const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
-  window.open(intent, '_blank', 'noopener,noreferrer')
+  openShare(intent)
 }
 
 const shareTelegram = () => {
   const { url, text } = makeSharePayload()
   const tg = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
-  window.open(tg, '_blank', 'noopener,noreferrer')
+  openShare(tg)
 }
 
 const shareWhatsApp = () => {
   const { url, text } = makeSharePayload()
   const wa = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`
-  window.open(wa, '_blank', 'noopener,noreferrer')
+  openShare(wa)
 }
 
   useEffect(() => {
@@ -1054,25 +1055,19 @@ function doFollow(kind) {
 
               {dailyTapMsg ? <div className="miniGameMsg">{dailyTapMsg}</div> : null}
               <div className="dailyExtraTasks" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
-                <button
-                  className="btn btnMiniGame"
-                  onClick={handleDailyCheckin}
+                <button className="btn btnMiniGame" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleDailyCheckin}
                   disabled={checkinLoading || !bearerToken || checkinDoneToday}
                 >
                   {checkinDoneToday ? 'Check-in ✓' : (checkinLoading ? 'Claiming…' : 'Daily Check-in +15 EP')}
                 </button>
 
-                <button
-                  className="btn btnMiniGame"
-                  onClick={handleKudiPush}
+                <button className="btn btnMiniGame" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleKudiPush}
                   disabled={kudiPushLoading || !bearerToken || kudiPushDoneToday}
                 >
                   {kudiPushDoneToday ? 'Kudi Push ✓' : (kudiPushLoading ? 'Claiming…' : 'Kudi Push +20 EP')}
                 </button>
 
-                <button
-                  className="btn btnMiniGame"
-                  onClick={handleMiniChallenge}
+                <button className="btn btnMiniGame" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleMiniChallenge}
                   disabled={miniLoading || !bearerToken || miniDoneToday}
                 >
                   {miniDoneToday ? 'Mini ✓' : (miniLoading ? 'Claiming…' : 'Mini Challenge +20 EP')}
