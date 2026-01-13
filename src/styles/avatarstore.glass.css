@@ -177,3 +177,27 @@
     transition: none !important;
   }
 }
+
+
+/* --- iOS Safari clipping fix (store modal only) ---
+   iOS Safari can crop children when a parent uses overflow+radius + filter/transform animations.
+   Keep visuals the same but avoid filter-based breathing + hover transforms on touch/iOS.
+*/
+@supports (-webkit-touch-callout: none){
+  .modalOverlay .storeModal .avatarCard{
+    animation: none !important;     /* disables filter: drop-shadow breathing */
+    filter: none !important;
+    transform: none !important;
+  }
+  .modalOverlay .storeModal .avatarCard:hover{
+    transform: none !important;
+  }
+}
+
+/* Touch devices (incl. iOS): no hover lift to prevent raster/clipping glitches */
+@media (hover: none) and (pointer: coarse){
+  .modalOverlay .storeModal .avatarCard:hover{
+    transform: none !important;
+  }
+}
+

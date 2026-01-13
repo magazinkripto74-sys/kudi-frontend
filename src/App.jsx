@@ -9,7 +9,7 @@ const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 
 
 // Defaults can be overridden via .env (VITE_*)
-const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || 'https://api.mainnet-beta.solana.com'
+const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC || 'https://mainnet.helius-rpc.com/?api-key=72788d24-e519-4c50-a8c1-a2a6eff43187'
 const USDC_MINT = import.meta.env.VITE_USDC_MINT || 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
 const TREASURY_WALLET = import.meta.env.VITE_TREASURY_WALLET || 'BAozCCttGU7SVvpSdGzqoTrdEK3jrp3gU1nF6h8GfykR'
 const USDC_DECIMALS = 6
@@ -170,6 +170,7 @@ export default function App() {
   const [termsOk, setTermsOk] = useState(false)
   const [isConnectOpen, setIsConnectOpen] = useState(false)
   const [referralCode, setReferralCode] = useState('')
+  const [referralLocked, setReferralLocked] = useState(false)
   const [selectedPackage, setSelectedPackage] = useState('PRO')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState('')
@@ -232,6 +233,18 @@ export default function App() {
       try { localStorage.setItem('kudi_referralCode', finalRef) } catch {}
     }
   }, [])
+
+  // Lock referral input per-wallet after successful attach/save
+  useEffect(() => {
+    try {
+      if (!wallet) { setReferralLocked(false); return }
+      const key = `kudi_referralLocked_${wallet}`
+      const locked = localStorage.getItem(key) === '1'
+      setReferralLocked(locked)
+    } catch {
+      // ignore
+    }
+  }, [wallet])
 
   // One-time social follow tasks (gate before other tasks)
   const [followDone, setFollowDone] = useState({ x: false, telegram: false, instagram: false })
@@ -625,9 +638,9 @@ async function handleBuy() {
       await connection.confirmTransaction({ signature: txSig, blockhash, lastValidBlockHeight }, 'confirmed')
 
       // 2) Tell backend to verify tx + credit ledger / referrals
-      const verify = await api('/purchase/verifyTx', {
+      const verify = await api('/purchase/verify', {
         method: 'POST',
-        body: { txSig, packageAmount: amountUsdc }
+        body: { packageId: selectedPackage, signature: txSig }
       })
 
       if (!verify?.ok) {
@@ -665,6 +678,13 @@ async function handleBuy() {
       const r = await api('/referral/attach', { method: 'POST', body: { refCode: code } })
       if (r?.alreadyAttached) setToast('ℹ️ Referral already attached.')
       else setToast('✅ Referral attached.')
+
+      // After a successful attach (or already attached), lock the input for this wallet
+      try {
+        if (wallet) localStorage.setItem(`kudi_referralLocked_${wallet}`, '1')
+      } catch {}
+      setReferralLocked(true)
+
       await refresh()
     } catch (e) {
       setToast(mapReferralError(e?.message))
@@ -947,9 +967,9 @@ function doFollow(kind) {
 
             <div className="field">
               <label>Referral Code (optional)</label>
-              <input value={referralCode} onChange={(e) => setReferralCode(e.target.value)} placeholder="REF-XXXX" />
+              <input value={referralCode} onChange={(e) => { if (!referralLocked) setReferralCode(e.target.value) }} placeholder="REF-XXXX" readOnly={referralLocked} />
               <div className="row">
-                <button className="btn secondary" onClick={handleSaveRef} disabled={loading}>Save</button>
+                <button className="btn secondary" onClick={handleSaveRef} disabled={loading || referralLocked}>{referralLocked ? 'Saved' : 'Save'}</button>
                 <button className="btn secondary" onClick={() => handleCopy(referralCode, 'referral code')} disabled={!referralCode}>Copy</button>
               </div>
             </div>
