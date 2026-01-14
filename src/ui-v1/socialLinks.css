@@ -1,0 +1,25 @@
+/* src/ui-v1/socialLinks.css */
+.kudiSocialRow{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+}
+
+.kudiSocialIcon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  color: rgba(255,255,255,.75);
+  text-decoration:none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+}
+
+.kudiSocialIcon:hover{
+  color: rgba(255,255,255,.95);
+  border-color: rgba(168,85,247,.35);
+  box-shadow: 0 0 18px rgba(168,85,247,.18);
+}

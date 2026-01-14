@@ -123,6 +123,49 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
 .btn.coinBtn:hover{
   background: rgba(245,158,11,.20);
 }
+
+/* ===== ENERGY SKUNK GAME (SAFE UPGRADE) =====
+   - Only targets Energy button class
+   - DOES NOT touch .btn base
+*/
+.btn.energyGameBtnSoon{
+  position: relative;
+  border-color: rgba(56,255,215,.28);
+  background: linear-gradient(180deg, rgba(11,11,18,.35), rgba(19,19,37,.55));
+  box-shadow: 0 0 0 1px rgba(56,255,215,.10), 0 0 38px rgba(56,255,215,.18);
+  opacity: .95;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn.energyGameBtnSoon[disabled]{
+  cursor: not-allowed;
+  opacity: .88;
+}
+.btn.energyGameBtnSoon .energyGameBtnMain{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+}
+.btn.energyGameBtnSoon .energyGameBtnBadge{
+  margin-left:10px;
+  font-size:10px;
+  letter-spacing:.6px;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(245,158,11,.28);
+  background: rgba(245,158,11,.10);
+  color: rgba(255,220,120,.95);
+  box-shadow: 0 0 22px rgba(245,158,11,.12);
+}
+@keyframes kudiBreath{
+  0%,100%{ transform: translateY(0px) scale(1); box-shadow: 0 0 0 1px rgba(56,255,215,.10), 0 0 32px rgba(56,255,215,.16); }
+  50%{ transform: translateY(-1px) scale(1.01); box-shadow: 0 0 0 1px rgba(56,255,215,.14), 0 0 48px rgba(56,255,215,.22); }
+}
+.btn.energyGameBtnSoon{
+  animation: kudiBreath 2.6s ease-in-out infinite;
+}
+
 .coinHero{
   margin-top:18px;
   border:1px solid rgba(245,158,11,.22);
@@ -409,15 +452,27 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
   opacity:1;
   transform: translateY(-1px);
 }
-.footer{
+.footerWrap{
   margin-top:24px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(11,11,18,.22);
+  border-radius:18px;
+  padding:14px 14px;
   display:flex;
-  gap:8px;
-  justify-content:center;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,.18);
+}
+.footerLeft{
+  display:flex;
   align-items:center;
+  gap:10px;
+  flex-wrap: wrap;
   font-size:12px;
   color: rgba(255,255,255,.45);
 }
+.footSep{opacity:.5}
 .footLink{
   color: inherit;
   text-decoration:none;
@@ -425,6 +480,55 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
 .footLink:hover{
   text-decoration:underline;
 }
+
+.footerRight{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  align-items:flex-end;
+  flex: 1;
+  min-width: 280px;
+}
+.footerSocialTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:12px;
+  width:100%;
+}
+.footerAddr{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  font-size:12px;
+  color: rgba(255,255,255,.62);
+  line-height:1.2;
+}
+.footerAddrItem{
+  text-decoration:none;
+  opacity:.92;
+}
+.footerAddrItem:hover{
+  text-decoration:underline;
+  opacity:1;
+}
+.footerInfo{
+  width:100%;
+  padding-top:10px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:8px 12px;
+  font-size:12px;
+  color: rgba(255,255,255,.55);
+}
+@media (max-width: 900px){
+  .footerWrap{flex-direction:column; align-items:stretch;}
+  .footerRight{align-items:flex-start; min-width: 0;}
+  .footerSocialTop{justify-content:flex-start; flex-wrap: wrap;}
+  .footerInfo{grid-template-columns:1fr;}
+}
+
 
 /* ===== Task Stack (viral + one-time follows) ===== */
 .taskStack{ margin-top:14px; display:flex; flex-direction:column; gap:12px; }
@@ -771,53 +875,4 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
     width: 100%;
     border-radius: 16px;
   }
-}
-
-/* =========================
-   KUDI HOTFIX: Wallet click reliability + Social SVG icons + Energy coming soon (SAFE)
-   - Does NOT change .btn base styles
-   - Only adds visuals, avoids overlay/pointer issues
-   ========================= */
-.trustIcons a{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width: 28px;
-  height: 28px;
-  border-radius: 10px;
-}
-.trustIcons svg{
-  width: 16px;
-  height: 16px;
-  display:block;
-  fill: currentColor;
-}
-
-/* ENERGY SKUNK GAME — coming soon badge + subtle neon breathe */
-.energyGameBtnSoon{
-  position: relative;
-  border: 1px solid rgba(139,92,246,.45);
-  background: rgba(139,92,246,.10);
-  box-shadow: 0 0 0 1px rgba(139,92,246,.12), 0 0 26px rgba(139,92,246,.18);
-  animation: kudiEnergyBreathe 3.0s ease-in-out infinite;
-}
-.energyGameBtnSoon::after{
-  content: attr(data-soon);
-  margin-left: 10px;
-  font-size: 10px;
-  letter-spacing: .8px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(56,255,215,.20);
-  background: rgba(56,255,215,.08);
-  color: rgba(230,255,250,.92);
-  pointer-events: none; /* never block clicks around it */
-  text-transform: uppercase;
-}
-@keyframes kudiEnergyBreathe{
-  0%, 100%{ transform: translateY(0px) scale(1); box-shadow: 0 0 0 1px rgba(139,92,246,.12), 0 0 22px rgba(139,92,246,.16); }
-  50%{ transform: translateY(-1px) scale(1.02); box-shadow: 0 0 0 1px rgba(139,92,246,.18), 0 0 34px rgba(139,92,246,.26); }
-}
-@media (prefers-reduced-motion: reduce){
-  .energyGameBtnSoon{ animation: none; }
 }

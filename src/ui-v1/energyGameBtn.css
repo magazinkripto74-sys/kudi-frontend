@@ -1,24 +1,47 @@
-/* src/ui-v1/energyGameBtn.css */
-.energyGameBtn{
-  padding: 10px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.14);
-  background: rgba(255,255,255,0.06);
-  color: rgba(255,255,255,0.9);
-  font-weight: 800;
-  letter-spacing: 0.6px;
+/* src/ui-v1/energyGameBtn.css
+   SAFE visual-only polish for Energy Skunk Game button.
+   - Do NOT change global .btn rules
+*/
+
+.energyGameBtnSoon{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(139,92,246,.45);
+  background: rgba(139,92,246,.10);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.12), 0 0 26px rgba(139,92,246,.18);
+  animation: kudiEnergyBreathe 3.0s ease-in-out infinite;
+}
+
+.energyGameBtnBadge{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  letter-spacing: .8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56,255,215,.20);
+  background: rgba(56,255,215,.08);
+  color: rgba(230,255,250,.92);
   text-transform: uppercase;
-  cursor: not-allowed;
-  opacity: 0.7;
+  pointer-events: none;
   white-space: nowrap;
 }
-.energyGameBtn:disabled{
-  filter: saturate(1.05);
-}
-@media (max-width: 520px){
-  .energyGameBtn{
-    width: 100%;
-    justify-content: center;
-    display: inline-flex;
+
+@keyframes kudiEnergyBreathe{
+  0%, 100%{
+    transform: translateY(0px) scale(1);
+    box-shadow: 0 0 0 1px rgba(139,92,246,.12), 0 0 22px rgba(139,92,246,.16);
   }
+  50%{
+    transform: translateY(-1px) scale(1.02);
+    box-shadow: 0 0 0 1px rgba(139,92,246,.18), 0 0 34px rgba(139,92,246,.26);
+  }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .energyGameBtnSoon{ animation: none; }
 }
