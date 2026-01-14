@@ -875,4 +875,30 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
     width: 100%;
     border-radius: 16px;
   }
+
+
+/* === FIX: Energy Skunk Game button mobile layout (mobile only) === */
+.btn.energyGameBtnSoon{
+  flex: 1 1 100% !important;      /* full row on mobile */
+  line-height: normal !important;  /* override 42px line-height */
+  padding: 10px 12px !important;
+  height: auto !important;
+}
+
+.btn.energyGameBtnSoon .energyGameBtnMain{
+  display: flex !important;
+  flex-direction: column !important; /* stack text + badge */
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+  white-space: normal !important;
+}
+
+.btn.energyGameBtnSoon .energyGameBtnBadge{
+  margin-left: 0 !important;     /* prevent overlap */
+  margin-top: 2px !important;
+  flex-shrink: 0 !important;
+}
 }
