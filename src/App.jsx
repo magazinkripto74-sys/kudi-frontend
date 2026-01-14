@@ -11,6 +11,8 @@ import MobileHamburgerMenu from './ui-v1/MobileHamburgerMenu'
 import './ui-v1/mobileHamburgerMenu.css'
 import SocialLinks from './ui-v1/SocialLinks'
 import './ui-v1/socialLinks.css'
+import LeaderboardTicker from './ui-v1/LeaderboardTicker'
+import './ui-v1/leaderboardTicker.css'
 
 
 
@@ -934,6 +936,9 @@ function doFollow(kind) {
           <img className="leaderArt" src="/kudi-buy-coin.png" alt="KUDI SKUNK" />
         </div>
       </div>
+
+      <LeaderboardTicker direction="ltr" includeWelcome={false} />
+
 
 <div className="taskStack">
   <div className="taskCard">
