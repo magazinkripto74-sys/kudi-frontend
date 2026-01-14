@@ -6,6 +6,8 @@ import AvatarStore from './AvatarStore'
 import "./styles/avatarstore.glass.css"
 import { UI_V1_ENABLED } from './config/features'
 import UiV1Root from './ui-v1/UiV1Root'
+import './ui-v1/energyGameBtn.css'
+
 
 
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
@@ -853,13 +855,9 @@ function doFollow(kind) {
 
           </button>
 
-          <div className="badge">
-
-            <span className={`dot ${statusDot}`} />
-
-            <span className="mono">{API_BASE}</span>
-
-          </div>
+          <button className="energyGameBtn" type="button" disabled>
+            ENERGY SKUNK GAME
+          </button>
 
         </div>
       </div>
@@ -1233,9 +1231,7 @@ function doFollow(kind) {
             <button className="btn secondary" onClick={refresh}>Refresh</button>
           </div>
 
-          <div className="note">
-            If the API badge stays red, verify backend is running on <span className="mono">{API_BASE}</span>.
-          </div>
+          
         </div>
       </div>
 
