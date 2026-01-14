@@ -7,6 +7,8 @@ import "./styles/avatarstore.glass.css"
 import { UI_V1_ENABLED } from './config/features'
 import UiV1Root from './ui-v1/UiV1Root'
 import './ui-v1/energyGameBtn.css'
+import MobileHamburgerMenu from './ui-v1/MobileHamburgerMenu'
+import './ui-v1/mobileHamburgerMenu.css'
 
 
 
@@ -169,7 +171,9 @@ const TRUST_LINKS = {
 
 
 export default function App() {
-  const [wallet, setWallet] = useState('')
+  
+  const [menuOpen, setMenuOpen] = useState(false)
+const [wallet, setWallet] = useState('')
   const [bearerToken, setBearerToken] = useState('')
   const [pendingLogin, setPendingLogin] = useState(null) // { wallet, token, message }
   const [termsOk, setTermsOk] = useState(false)
@@ -818,9 +822,30 @@ function doFollow(kind) {
 
   return (
     <div className="container">
+      <MobileHamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <style>{`
+        .kudiHamburgerBtn{
+          width: 34px;
+          height: 34px;
+          border-radius: 10px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: rgba(255,255,255,0.06);
+          color: rgba(255,255,255,0.92);
+          cursor: pointer;
+          margin-right: 10px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          line-height: 18px;
+        }
+      `}</style>
+
       <div className="header">
         <div className="brand">
-          <div className="logo" />
+          <div className="logo">
+            <button className="kudiHamburgerBtn" onClick={() => setMenuOpen(true)} aria-label="Open menu">☰</button>
+          </div>
           <div>
             <div className="title">KUDI SKUNK</div>
             <div className="small">USDC on Solana • Wallet login</div>
@@ -828,8 +853,6 @@ function doFollow(kind) {
           </div>
         </div>
         <div className="headerRight">
-
-
 <div className="trustIcons">
       <a href={TRUST_LINKS.x} target="_blank" rel="noopener noreferrer" title="Official X">𝕏</a>
       <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram">📸</a>
