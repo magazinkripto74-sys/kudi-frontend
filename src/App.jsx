@@ -4,6 +4,9 @@ import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction, getAssociatedTokenAddress } from '@solana/spl-token'
 import AvatarStore from './AvatarStore'
 import "./styles/avatarstore.glass.css"
+import { UI_V1_ENABLED } from './config/features'
+import UiV1Root from './ui-v1/UiV1Root'
+
 
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 
@@ -806,6 +809,10 @@ function doFollow(kind) {
   const prevTarget = tier === 'K0' ? 0 : thresholds[tier] || 0
   const remaining = nextTarget ? Math.max(0, nextTarget - ep) : 0
   const progress = nextTarget ? Math.min(1, Math.max(0, (ep - prevTarget) / Math.max(1, (nextTarget - prevTarget)))) : 1
+
+  // SAFE UI gate (default OFF). When enabled, render UI V1 root only.
+  if (UI_V1_ENABLED) return <UiV1Root />
+
 
   return (
     <div className="container">
