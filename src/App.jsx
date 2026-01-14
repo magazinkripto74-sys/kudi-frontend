@@ -855,15 +855,8 @@ function doFollow(kind) {
         <div className="headerRight">
 <div className="trustIcons">
       <a href={TRUST_LINKS.x} target="_blank" rel="noopener noreferrer" title="Official X">𝕏</a>
-      <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><svg className="trustIconSvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <rect x="3" y="3" width="18" height="18" rx="5" ry="5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-          <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
-          <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" />
-        </svg></a>
-      <a href={TRUST_LINKS.telegram} target="_blank" rel="noopener noreferrer" title="Telegram"><svg className="trustIconSvg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M21.8 4.6 3.2 11.9c-.9.35-.86 1.67.08 1.97l4.7 1.5 1.8 5.8c.28.9 1.43 1.16 2.06.45l2.7-3.1 5 3.5c.74.54 1.79.12 2-.8l3.1-14.2c.22-1.02-.77-1.88-1.78-1.48Z" fill="currentColor"/>
-          <path d="M9.1 13.9 18.9 7.8c.35-.22.72.24.43.53l-7.9 7.6-.3 3.7c-.03.38-.55.48-.72.14l-1.9-3.7Z" fill="currentColor" opacity=".9"/>
-        </svg></a>
+      <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram">📸</a>
+      <a href={TRUST_LINKS.telegram} target="_blank" rel="noopener noreferrer" title="Telegram">✈️</a>
       <a href={TRUST_LINKS.web} target="_blank" rel="noopener noreferrer" title="Website">🌐</a>
       <a href={TRUST_LINKS.mail} title="Contact">✉️</a>
     </div>
@@ -885,7 +878,7 @@ function doFollow(kind) {
 
           </button>
 
-          <button className="energyGameBtn energyGameBtnSoon" type="button" disabled aria-disabled="true">
+          <button className="energyGameBtn" type="button" disabled>
             ENERGY SKUNK GAME
           </button>
 
