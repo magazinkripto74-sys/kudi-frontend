@@ -423,8 +423,23 @@ const shareWhatsApp = () => {
     setToast('')
     setTermsOk(false)
     try {
-      const sol = window?.solana
-      if (!sol || !sol.isPhantom) {
+      const sol = (window?.solana || window?.phantom?.solana || null)
+      const isPhantom = !!(sol?.isPhantom)
+      if (!sol || !sol.connect) {
+        // Mobile browsers won't have an injected provider. Open the dApp inside Phantom.
+        if (isMobile) {
+          const here = window.location.href
+          window.location.href = `https://phantom.app/ul/browse/${encodeURIComponent(here)}`
+          return
+        }
+        setToast('Wallet provider not found. Please install Phantom and refresh.')
+        return
+      }
+
+      // Prefer Phantom, but allow compatible providers too.
+      if (!isPhantom && !isMobile) {
+        // still allow connect; just inform silently (no blocking)
+      }
         // Mobile browsers won't have window.solana. Open the dApp inside Phantom.
         if (isMobile) {
           const here = window.location.href
@@ -855,8 +870,12 @@ function doFollow(kind) {
         <div className="headerRight">
 <div className="trustIcons">
       <a href={TRUST_LINKS.x} target="_blank" rel="noopener noreferrer" title="Official X">𝕏</a>
-      <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram">📸</a>
-      <a href={TRUST_LINKS.telegram} target="_blank" rel="noopener noreferrer" title="Telegram">✈️</a>
+      <a href={TRUST_LINKS.instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4h-9Zm4.5 4.5A5.5 5.5 0 1 1 6.5 14 5.5 5.5 0 0 1 12 8.5Zm0 2A3.5 3.5 0 1 0 15.5 14 3.5 3.5 0 0 0 12 10.5Zm6-3.35a1.15 1.15 0 1 1-1.15-1.15A1.15 1.15 0 0 1 18 7.15Z"/>
+      </svg></a>
+      <a href={TRUST_LINKS.telegram} target="_blank" rel="noopener noreferrer" title="Telegram"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M21.8 4.3 19.2 20a2 2 0 0 1-2.8 1.4l-5.4-2.2-2.6 2.5c-.2.2-.4.3-.7.3h-.4c-.3-.1-.5-.4-.5-.7l.1-4 10.7-10.2c.2-.2 0-.4-.2-.3L5.9 14.2 1.9 12.9A2 2 0 0 1 2 9.1L19.9 2.2a1.5 1.5 0 0 1 1.9 2.1Z"/>
+      </svg></a>
       <a href={TRUST_LINKS.web} target="_blank" rel="noopener noreferrer" title="Website">🌐</a>
       <a href={TRUST_LINKS.mail} title="Contact">✉️</a>
     </div>
@@ -878,7 +897,7 @@ function doFollow(kind) {
 
           </button>
 
-          <button className="energyGameBtn" type="button" disabled>
+          <button className="energyGameBtn energyGameBtnSoon" type="button" disabled data-soon="COMING SOON">
             ENERGY SKUNK GAME
           </button>
 

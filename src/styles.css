@@ -772,3 +772,52 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
     border-radius: 16px;
   }
 }
+
+/* =========================
+   KUDI HOTFIX: Wallet click reliability + Social SVG icons + Energy coming soon (SAFE)
+   - Does NOT change .btn base styles
+   - Only adds visuals, avoids overlay/pointer issues
+   ========================= */
+.trustIcons a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+}
+.trustIcons svg{
+  width: 16px;
+  height: 16px;
+  display:block;
+  fill: currentColor;
+}
+
+/* ENERGY SKUNK GAME — coming soon badge + subtle neon breathe */
+.energyGameBtnSoon{
+  position: relative;
+  border: 1px solid rgba(139,92,246,.45);
+  background: rgba(139,92,246,.10);
+  box-shadow: 0 0 0 1px rgba(139,92,246,.12), 0 0 26px rgba(139,92,246,.18);
+  animation: kudiEnergyBreathe 3.0s ease-in-out infinite;
+}
+.energyGameBtnSoon::after{
+  content: attr(data-soon);
+  margin-left: 10px;
+  font-size: 10px;
+  letter-spacing: .8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56,255,215,.20);
+  background: rgba(56,255,215,.08);
+  color: rgba(230,255,250,.92);
+  pointer-events: none; /* never block clicks around it */
+  text-transform: uppercase;
+}
+@keyframes kudiEnergyBreathe{
+  0%, 100%{ transform: translateY(0px) scale(1); box-shadow: 0 0 0 1px rgba(139,92,246,.12), 0 0 22px rgba(139,92,246,.16); }
+  50%{ transform: translateY(-1px) scale(1.02); box-shadow: 0 0 0 1px rgba(139,92,246,.18), 0 0 34px rgba(139,92,246,.26); }
+}
+@media (prefers-reduced-motion: reduce){
+  .energyGameBtnSoon{ animation: none; }
+}
