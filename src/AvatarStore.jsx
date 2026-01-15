@@ -231,14 +231,20 @@ function Section({ title, hint, items, ownedSet, onBuy, ep, busy }) {
 
           return (
             <div key={a.id} className={`avatarCard tier_${a.tier} ${isOwned ? "isOwned" : ""}`}>
-              <div className="avatarMedia">
-                <img src={a.img} alt={a.name} loading="lazy" />
+              <div className={`avatarMedia ${String(a?.name || "").toUpperCase().includes("KUDI BABA") ? "kudiBabaMedia" : ""}`}>
+                {String(a?.name || "").toUpperCase().includes("KUDI BABA") ? (
+                  <div className="kudiBabaSplit">
+                    <div className="kudiBabaLeft">
+                      <img className="kudiBabaAvatarImg" src={a.img} alt={a.name} loading="lazy" />
+                    </div>
+                    <div className="kudiBabaRight" aria-label="KUDI BABA reward">
+                      <img className="kudiBabaRewardImg" src="/media/kudi-baba-500usdc.png" alt="500 USDC reward" loading="lazy" />
+                    </div>
+                  </div>
+                ) : (
+                  <img src={a.img} alt={a.name} loading="lazy" />
+                )}
               </div>
-              {String(a?.name || "").toUpperCase().includes("KUDI BABA") ? (
-                <div className="kudiBabaRewardWrap" aria-label="KUDI BABA reward">
-                  <img className="kudiBabaRewardImg" src="/media/kudi-baba-500usdc.png" alt="500 USDC reward" loading="lazy" />
-                </div>
-              ) : null}
 
               <div className="avatarInfo">
                 <div className="avatarName">{a.name}</div>
