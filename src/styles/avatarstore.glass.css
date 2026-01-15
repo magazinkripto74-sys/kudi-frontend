@@ -203,72 +203,21 @@
 
 
 
-/* ===== KUDI BABA reward visual (RIGHT SIDE, SAFE + SCOPED) =====
-   Goal: Show 500 USDC reward image as a visual badge panel
-   next to the KUDI BABA avatar image (NOT a separate store item).
-*/
-.modalOverlay .storeModal .avatarCard.isKudiBaba .avatarMedia.kudiBabaMedia{
-  aspect-ratio: 16 / 9;          /* wider to fit avatar + reward */
-  padding: 10px;
-  background: rgba(0,0,0,.28);
-}
-
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaSplit{
+/* ===== KUDI BABA 500 USDC reward (SAFE, scoped to store modal) ===== */
+.modalOverlay .storeModal .kudiBabaRewardWrap{
   width: 100%;
-  height: 100%;
-  display: flex;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaLeft{
-  flex: 1 1 auto;
-  border-radius: 14px;
-  overflow: hidden;
+  padding: 10px 10px 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   background: rgba(0,0,0,.18);
-  border: 1px solid rgba(255,255,255,.08);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  border-top: 1px solid rgba(255,255,255,.08);
 }
-
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaAvatarImg{
+.modalOverlay .storeModal .kudiBabaRewardImg{
   width: 100%;
-  height: 100%;
+  max-width: 260px;
+  height: auto;
   object-fit: contain;
-  object-position: center;
   display:block;
-}
-
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaRight{
-  flex: 0 0 42%;
-  max-width: 42%;
-  border-radius: 14px;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(245,158,11,.10), rgba(0,0,0,.18));
-  border: 1px solid rgba(245,158,11,.18);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding: 8px;
-}
-
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaRewardImg{
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-  display:block;
-  filter: drop-shadow(0 0 20px rgba(245,158,11,.20));
-}
-
-/* Small screens: keep it readable */
-@media (max-width: 520px){
-  .modalOverlay .storeModal .avatarCard.isKudiBaba .avatarMedia.kudiBabaMedia{
-    aspect-ratio: 4 / 3;
-  }
-  .modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaRight{
-    flex-basis: 46%;
-    max-width: 46%;
-  }
+  filter: drop-shadow(0 0 22px rgba(245,158,11,.22));
 }
