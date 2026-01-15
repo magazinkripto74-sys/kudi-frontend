@@ -203,34 +203,26 @@
 
 
 
-/* ===== KUDI BABA reward visual (RIGHT SIDE) — v3 (more strict) =====
-   Forces split layout even if base .avatarMedia is flex-centered.
+/* ===== KUDI BABA reward visual (RIGHT SIDE, SAFE + SCOPED) =====
+   Goal: Show 500 USDC reward image as a visual badge panel
+   next to the KUDI BABA avatar image (NOT a separate store item).
 */
 .modalOverlay .storeModal .avatarCard.isKudiBaba .avatarMedia.kudiBabaMedia{
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 16 / 9;          /* wider to fit avatar + reward */
   padding: 10px;
   background: rgba(0,0,0,.28);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  display: block !important;          /* override base flex */
 }
 
 .modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaSplit{
   width: 100%;
   height: 100%;
-  display: flex !important;
+  display: flex;
   gap: 10px;
   align-items: stretch;
-  justify-content: stretch;
-}
-
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaLeft,
-.modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaRight{
-  height: 100%;
-  min-height: 0;
 }
 
 .modalOverlay .storeModal .avatarCard.isKudiBaba .kudiBabaLeft{
-  flex: 1 1 0%;
+  flex: 1 1 auto;
   border-radius: 14px;
   overflow: hidden;
   background: rgba(0,0,0,.18);
@@ -270,6 +262,7 @@
   filter: drop-shadow(0 0 20px rgba(245,158,11,.20));
 }
 
+/* Small screens: keep it readable */
 @media (max-width: 520px){
   .modalOverlay .storeModal .avatarCard.isKudiBaba .avatarMedia.kudiBabaMedia{
     aspect-ratio: 4 / 3;
