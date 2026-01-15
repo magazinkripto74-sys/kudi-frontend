@@ -16,6 +16,8 @@ import './ui-v1/leaderboardTicker.css'
 
 
 
+import VideoBox from './ui-v1/VideoBox'
+import './ui-v1/videoBox.css'
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 
 
@@ -880,6 +882,8 @@ function doFollow(kind) {
         </div>
       </div>
 
+            <VideoBox src="/media/hero16x9.mp4" />
+
       <div className="leaderHero">
         
         <div className="leaderBox">
@@ -938,6 +942,8 @@ function doFollow(kind) {
       </div>
 
       <LeaderboardTicker direction="ltr" includeWelcome={false} />
+
+      <VideoBox src="/media/ticker16x9.mp4" />
 
 
 <div className="taskStack">
