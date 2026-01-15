@@ -224,15 +224,16 @@ function Section({ title, hint, items, ownedSet, onBuy, ep, busy }) {
       <div className="storeGrid">
         {(items || []).map((a) => {
           const isOwned = ownedSet.has(a.id)
+          const isKudiBaba = String(a?.name || "").toUpperCase().includes("KUDI BABA")
           const remaining = Number(a.remaining ?? (Number(a.maxSupply ?? a.supply ?? 1) - Number(a.soldCount ?? 0)))
           const isSoldOut = !isOwned && Number.isFinite(remaining) && remaining <= 0
           const canBuy = !isOwned && Number(ep || 0) >= Number(a.priceEP || 0)
           const needMore = Math.max(0, Number(a.priceEP || 0) - Number(ep || 0))
 
           return (
-            <div key={a.id} className={`avatarCard tier_${a.tier} ${isOwned ? "isOwned" : ""}`}>
-              <div className={`avatarMedia ${String(a?.name || "").toUpperCase().includes("KUDI BABA") ? "kudiBabaMedia" : ""}`}>
-                {String(a?.name || "").toUpperCase().includes("KUDI BABA") ? (
+            <div key={a.id} className={`avatarCard tier_${a.tier} ${isOwned ? "isOwned" : ""} ${isKudiBaba ? "isKudiBaba" : ""}`}>
+              <div className={`avatarMedia ${isKudiBaba ? "kudiBabaMedia" : ""}`}>
+                {isKudiBaba ? (
                   <div className="kudiBabaSplit">
                     <div className="kudiBabaLeft">
                       <img className="kudiBabaAvatarImg" src={a.img} alt={a.name} loading="lazy" />
