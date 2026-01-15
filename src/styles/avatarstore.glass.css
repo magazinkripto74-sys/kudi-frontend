@@ -201,23 +201,3 @@
   }
 }
 
-
-
-/* ===== KUDI BABA 500 USDC reward (SAFE, scoped to store modal) ===== */
-.modalOverlay .storeModal .kudiBabaRewardWrap{
-  width: 100%;
-  padding: 10px 10px 12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(0,0,0,.18);
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-.modalOverlay .storeModal .kudiBabaRewardImg{
-  width: 100%;
-  max-width: 260px;
-  height: auto;
-  object-fit: contain;
-  display:block;
-  filter: drop-shadow(0 0 22px rgba(245,158,11,.22));
-}
