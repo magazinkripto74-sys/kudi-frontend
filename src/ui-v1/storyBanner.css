@@ -47,3 +47,31 @@
 @media (max-width: 520px){
   .storyBannerMedia{ max-height: 140px; }
 }
+.storyBannerWrap{
+  width: 100%;
+  margin: 0 0 14px 0;
+  border-radius: 18px;
+  overflow: hidden;
+  padding: 0;              /* boşluk olmasın */
+  background: transparent;  /* gri alan olmasın */
+}
+
+/* DEFAULT = mobil güvenli (kırpmasız) */
+.storyBannerMedia{
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
+}
+
+/* DESKTOP’TA TAM OTURSUN (cover) */
+@media (min-width: 900px){
+  .storyBannerMedia{
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
