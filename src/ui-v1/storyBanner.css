@@ -16,6 +16,7 @@
   max-height: 190px;
   display: block;
   object-fit: cover;
+  object-position: center top;
   border-radius: 18px;
 }
 
