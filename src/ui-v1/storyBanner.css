@@ -77,3 +77,24 @@
     object-position: center;
   }
 }
+/* MOBILE: banner box'a TAM OTURSUN (no inset) */
+@media (max-width: 900px){
+  .storyBannerWrap{
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 18px;
+    overflow: hidden;
+  }
+
+  /* Banner alanı: mobilde sabit yükseklik -> cover düzgün çalışır */
+  .storyBannerMedia{
+    width: 100% !important;
+    height: 190px !important;       /* 180-220 arası deneyebilirsin */
+    max-width: none !important;
+    display: block;
+    object-fit: cover !important;
+    object-position: center right;  /* sağ alt detaylar daha görünür */
+    border-radius: 0 !important;    /* radius wrapper’dan gelsin */
+    background: transparent !important;
+  }
+}
