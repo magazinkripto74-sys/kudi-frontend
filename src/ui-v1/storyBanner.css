@@ -15,7 +15,9 @@
   height: auto;
 
   /* KIRPMA YOK */
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
+
   object-position: center;
 
   /* eski max-height kırpıyordu */
