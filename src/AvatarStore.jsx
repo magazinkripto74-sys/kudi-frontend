@@ -1,9 +1,56 @@
 import React, { useEffect, useMemo, useState } from "react"
+import StoryBanner from "./ui-v1/StoryBanner.jsx";
+
 
 const API_BASE = (import.meta.env.VITE_API_BASE || "http://localhost:4010").replace(/\/$/, "")
 
 const SESSION_KEY = "kudi_session_id"
-const BEARER_KEY = "kudi_bearer_token"
+
+// Token key mismatch is the #1 reason for 401 in local.
+// We try a small set of common keys (localStorage + sessionStorage) to avoid "missing_token".
+const BEARER_KEYS = [
+  "kudi_bearer_token",
+  "kudi_token",
+  "token",
+  "access_token",
+  "auth_token",
+  "authToken",
+]
+
+function normalizeBearer(raw) {
+  if (!raw) return ""
+  let s = String(raw).trim()
+  if (!s) return ""
+  if (s.toLowerCase().startsWith("bearer ")) s = s.slice(7).trim()
+  // Sometimes tokens are stored as JSON strings: { token: "..." }
+  if (s.startsWith("{") && s.endsWith("}")) {
+    try {
+      const j = JSON.parse(s)
+      s = (j?.token || j?.access_token || j?.bearer || "").toString().trim()
+    } catch {}
+  }
+  return s
+}
+
+function getBearerToken() {
+  // window-level fallback (some auth flows stash it here)
+  const w = normalizeBearer(window.__kudi_bearer_token || window.__kudi_token)
+  if (w) return w
+
+  // localStorage + sessionStorage
+  for (const k of BEARER_KEYS) {
+    try {
+      const v1 = normalizeBearer(localStorage.getItem(k))
+      if (v1) return v1
+    } catch {}
+    try {
+      const v2 = normalizeBearer(sessionStorage.getItem(k))
+      if (v2) return v2
+    } catch {}
+  }
+
+  return ""
+}
 
 function getSessionId() {
   try {
@@ -30,7 +77,7 @@ function safeJson(text) {
 
 async function api(path, { method = "GET", body, _retried } = {}) {
   const headers = { "X-Session-Id": getSessionId() }
-  const bearer = localStorage.getItem(BEARER_KEY) || ""
+  const bearer = getBearerToken()
   if (bearer) headers["Authorization"] = `Bearer ${bearer}`
   if (body) headers["Content-Type"] = "application/json"
 
@@ -82,7 +129,12 @@ export default function AvatarStore({ open, onClose, userId, onChanged }) {
         setOwned(Array.isArray(s?.ownedAvatarIds) ? s.ownedAvatarIds : [])
         setEp(Number(s?.ep ?? 0))
       } catch (e) {
-        setMsg(e.message || "Store load failed")
+        // Most common: 401 because auth token isn't present in storage yet.
+        if (e?.status === 401 && !getBearerToken()) {
+          setMsg("missing_token")
+        } else {
+          setMsg(e.message || "Store load failed")
+        }
       } finally {
         setLoading(false)
       }
@@ -166,6 +218,9 @@ export default function AvatarStore({ open, onClose, userId, onChanged }) {
         </div>
 
         <div className="storeBody">
+          {/* 16:9 Story Banner (separate component + its own CSS) */}
+          <StoryBanner />
+
           {msg ? <div className="miniGameMsg">{msg}</div> : null}
           {loading && !catalog.length ? <div className="small muted">Loading…</div> : null}
 

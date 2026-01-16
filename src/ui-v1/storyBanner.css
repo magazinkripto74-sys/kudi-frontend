@@ -1,0 +1,43 @@
+.storyBannerWrap{
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto 14px auto;
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.storyBannerMedia{
+  width: 100%;
+  /* Responsive banner: sabit height yok (modal icinde avatar grid'i ezmesin) */
+  aspect-ratio: 16 / 9;
+  height: auto;
+  max-height: 190px;
+  display: block;
+  object-fit: cover;
+  border-radius: 18px;
+}
+
+/* neon glow */
+.storyBannerWrap::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:18px;
+  box-shadow: 0 0 18px rgba(120,60,255,0.55);
+  pointer-events:none;
+
+  /* breathing glow burada (wrapper scale yok) */
+  animation: breatheGlow 2.6s ease-in-out infinite;
+}
+
+@keyframes breatheGlow{
+  0%   { opacity: 0.85; filter: brightness(1); }
+  50%  { opacity: 1;    filter: brightness(1.08); }
+  100% { opacity: 0.85; filter: brightness(1); }
+}
+
+@media (max-width: 520px){
+  .storyBannerMedia{ max-height: 140px; }
+}
