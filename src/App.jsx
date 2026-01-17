@@ -959,13 +959,13 @@ function doFollow(kind) {
     </div>
 
     <div className="taskBtns">
-      <button className={`btn secondary ${followDone.x ? 'isDone' : ''}`} onClick={() => doFollow('x')} disabled={followDone.x}>
+      <button className={`btn secondary btnX ${followDone.x ? 'isDone' : ''}`} onClick={() => doFollow('x')} disabled={followDone.x}>
         {followDone.x ? '✓ X followed' : 'Follow X'}
       </button>
-      <button className={`btn secondary ${followDone.telegram ? 'isDone' : ''}`} onClick={() => doFollow('telegram')} disabled={followDone.telegram}>
+      <button className={`btn secondary btnTg ${followDone.telegram ? 'isDone' : ''}`} onClick={() => doFollow('telegram')} disabled={followDone.telegram}>
         {followDone.telegram ? '✓ Telegram joined' : 'Join Telegram'}
       </button>
-      <button className={`btn secondary ${followDone.instagram ? 'isDone' : ''}`} onClick={() => doFollow('instagram')} disabled={followDone.instagram}>
+      <button className={`btn secondary btnIg ${followDone.instagram ? 'isDone' : ''}`} onClick={() => doFollow('instagram')} disabled={followDone.instagram}>
         {followDone.instagram ? '✓ Instagram followed' : 'Follow Instagram'}
       </button>
     </div>
@@ -983,9 +983,9 @@ function doFollow(kind) {
     </div>
 
     <div className="taskBtns">
-      <button className="btn secondary" onClick={shareX} disabled={!canShare}>Share on X</button>
-      <button className="btn secondary" onClick={shareTelegram} disabled={!canShare}>Share on Telegram</button>
-      <button className="btn secondary" onClick={shareWhatsApp} disabled={!canShare}>Share on WhatsApp</button>
+      <button className="btn secondary btnX" onClick={shareX} disabled={!canShare}>Share on X</button>
+      <button className="btn secondary btnTg" onClick={shareTelegram} disabled={!canShare}>Share on Telegram</button>
+      <button className="btn secondary btnWa" onClick={shareWhatsApp} disabled={!canShare}>Share on WhatsApp</button>
     
     {bearerToken && !hasNickname ? (
       <div style={{ marginTop: 10, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-end' }}>
@@ -1015,7 +1015,7 @@ function doFollow(kind) {
 
 
       <div className="grid">
-        <div className="card">
+        <div className="card buyCard">
           <h2>Buy Package (USDC)</h2>
 
           <div className="row">
@@ -1050,35 +1050,35 @@ function doFollow(kind) {
               <div className="pkgMiniGrid" role="radiogroup" aria-label="Select package">
                 <button
                   type="button"
-                  className={`pkgMiniBtn ${selectedPackage === 'STARTER' ? 'active' : ''}`}
+                  className={`pkgMiniBtn pkgStarter ${selectedPackage === 'STARTER' ? 'active' : ''}`}
                   onClick={() => setSelectedPackage('STARTER')}
                   aria-pressed={selectedPackage === 'STARTER'}
                 >
                   <div className="t">STARTER</div>
                   <div className="p">5 USDC</div>
-                  <div className="e">20 EP</div>
+                  <div className="e">20 EP (%10)</div>
                 </button>
 
                 <button
                   type="button"
-                  className={`pkgMiniBtn ${selectedPackage === 'PRO' ? 'active' : ''}`}
+                  className={`pkgMiniBtn pkgPro ${selectedPackage === 'PRO' ? 'active' : ''}`}
                   onClick={() => setSelectedPackage('PRO')}
                   aria-pressed={selectedPackage === 'PRO'}
                 >
                   <div className="t">PRO</div>
                   <div className="p">50 USDC</div>
-                  <div className="e">150 EP</div>
+                  <div className="e">150 EP (%20)</div>
                 </button>
 
                 <button
                   type="button"
-                  className={`pkgMiniBtn ${selectedPackage === 'ELITE' ? 'active' : ''}`}
+                  className={`pkgMiniBtn pkgElite ${selectedPackage === 'ELITE' ? 'active' : ''}`}
                   onClick={() => setSelectedPackage('ELITE')}
                   aria-pressed={selectedPackage === 'ELITE'}
                 >
                   <div className="t">ELITE</div>
                   <div className="p">100 USDC</div>
-                  <div className="e">300 EP</div>
+                  <div className="e">300 EP (%25)</div>
                 </button>
               </div>
             </div>
@@ -1101,7 +1101,7 @@ function doFollow(kind) {
               </div>
 
               <button
-                className="btn btnMiniGame"
+                className="btn btnMiniGame btnDailyTap"
                 onClick={handleDailyTap}
                 disabled={dailyTapLoading || !bearerToken || claimedToday}
               >
@@ -1110,19 +1110,19 @@ function doFollow(kind) {
 
               {dailyTapMsg ? <div className="miniGameMsg">{dailyTapMsg}</div> : null}
               <div className="dailyExtraTasks" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
-                <button className="btn btnMiniGame" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleDailyCheckin}
+                <button className="btn btnMiniGame btnDailyCheckin" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleDailyCheckin}
                   disabled={checkinLoading || !bearerToken || checkinDoneToday}
                 >
                   {checkinDoneToday ? 'Check-in ✓' : (checkinLoading ? 'Claiming…' : 'Daily Check-in +15 EP')}
                 </button>
 
-                <button className="btn btnMiniGame" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleKudiPush}
+                <button className="btn btnMiniGame btnKudiPush" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleKudiPush}
                   disabled={kudiPushLoading || !bearerToken || kudiPushDoneToday}
                 >
                   {kudiPushDoneToday ? 'Kudi Push ✓' : (kudiPushLoading ? 'Claiming…' : 'Kudi Push +20 EP')}
                 </button>
 
-                <button className="btn btnMiniGame" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleMiniChallenge}
+                <button className="btn btnMiniGame btnMiniChallenge" style={{ flex: '1 1 160px', minWidth: 160, whiteSpace: 'normal' }} onClick={handleMiniChallenge}
                   disabled={miniLoading || !bearerToken || miniDoneToday}
                 >
                   {miniDoneToday ? 'Mini ✓' : (miniLoading ? 'Claiming…' : 'Mini Challenge +20 EP')}
@@ -1140,7 +1140,7 @@ function doFollow(kind) {
           {toast ? <div className="toast">{toast}</div> : null}
         </div>
 
-        <div className="card">
+        <div className="card summaryCard">
           <h2>My Summary</h2>
           <div className="small">Data from <span className="mono">GET /me/summary</span></div>
 
