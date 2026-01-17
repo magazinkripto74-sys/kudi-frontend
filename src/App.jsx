@@ -228,6 +228,8 @@ const [wallet, setWallet] = useState('')
   const [isTermsOpen, setIsTermsOpen] = useState(false)
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
   const [isHowToPlayOpen, setIsHowToPlayOpen] = useState(false)
+  const [isWhitepaperOpen, setIsWhitepaperOpen] = useState(false)
+  const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
 
 
   // Initial load: restore wallet/token, remember referral code (from URL or storage).
@@ -1270,6 +1272,10 @@ function doFollow(kind) {
           <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsPrivacyOpen(true)}}>Privacy</a>
           <span className="footSep">•</span>
           <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsHowToPlayOpen(true)}}>How to Play</a>
+	          <span className="footSep">•</span>
+	          <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsWhitepaperOpen(true)}}>Whitepaper</a>
+	          <span className="footSep">•</span>
+	          <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsRoadmapOpen(true)}}>Roadmap</a>
           <span className="footSep">•</span>
           <a href={TRUST_LINKS.mail} className="footLink">Contact</a>
         </div>
@@ -1418,6 +1424,56 @@ function doFollow(kind) {
   </div>
 ) : null}
 
+{isRoadmapOpen ? (
+  <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsRoadmapOpen(false) } }}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modalTop">
+        <div>
+          <div className="modalTitle">Roadmap</div>
+          <div className="modalSub">What we ship next (high-level)</div>
+        </div>
+        <button className="xBtn" onClick={() => setIsRoadmapOpen(false)}>×</button>
+      </div>
+      <div className="modalBody">
+        <h3>Phase 1 — Foundation</h3>
+        <ul>
+          <li>Wallet login, secure sessions, stable backend.</li>
+          <li>Avatar Store (EP-only) with limited drops and idempotent purchases.</li>
+          <li>Daily EP tasks and leaderboard experience.</li>
+        </ul>
+
+        <h3>Phase 2 — Community Growth</h3>
+        <ul>
+          <li>Referral system improvements (attach-once, abuse guards, clear UI).</li>
+          <li>Social tasks & share flows optimized for mobile.</li>
+          <li>Better onboarding + ecosystem pages (About / Mission / Vision).</li>
+        </ul>
+
+        <h3>Phase 3 — Energy Skunk Game</h3>
+        <ul>
+          <li>"Energy Skunk Game" release (core gameplay loop).</li>
+          <li>EP utilities inside the game and seasonal events.</li>
+        </ul>
+
+        <h3>Phase 4 — On-chain Utilities</h3>
+        <ul>
+          <li>USDC flows with safety: queues, idempotency keys, treasury guards.</li>
+          <li>Admin/Ops tools (withdraw logs, daily reports, manual review if needed).</li>
+        </ul>
+
+        <h3>Phase 5 — Marketplace & Expansion</h3>
+        <ul>
+          <li>More avatar collections, special editions, and partnerships.</li>
+          <li>Marketplace/utility expansion (as ecosystem matures).</li>
+        </ul>
+      </div>
+      <div className="modalBottom">
+        <button className="btn secondary" onClick={() => setIsRoadmapOpen(false)}>Close</button>
+      </div>
+    </div>
+  </div>
+) : null}
+
 
 {isPrivacyOpen ? (
   <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsPrivacyOpen(false) } }}>
@@ -1439,6 +1495,96 @@ function doFollow(kind) {
       </div>
       <div className="modalBottom">
         <button className="btn secondary" onClick={() => setIsPrivacyOpen(false)}>Close</button>
+      </div>
+    </div>
+  </div>
+) : null}
+
+{isWhitepaperOpen ? (
+  <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsWhitepaperOpen(false) } }}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modalTop">
+        <div>
+          <div className="modalTitle">Whitepaper</div>
+          <div className="modalSub">KUDI SKUNK — EP Economy & Rewards (short version)</div>
+        </div>
+        <button className="xBtn" onClick={() => setIsWhitepaperOpen(false)}>×</button>
+      </div>
+      <div className="modalBody">
+        <h3>What is KUDI SKUNK?</h3>
+        <p>KUDI SKUNK is a gamified community layer built on Solana. You earn <b>EP</b> (Energy Points) from activities and use EP to unlock limited avatar drops and perks.</p>
+
+        <h3>EP (Energy Points)</h3>
+        <ul>
+          <li>EP is earned from in-app tasks (daily actions, community engagement, events).</li>
+          <li>EP is used for rewards (limited avatars, status tiers, future game utilities).</li>
+          <li>EP is tracked server-side per wallet (idempotent: no double-awards).</li>
+        </ul>
+
+        <h3>Packages & Status</h3>
+        <p>Packages give status benefits (e.g., Elite) and may unlock higher referral bonuses or special access. Core/Team wallets can be assigned Elite status for internal operations.</p>
+
+        <h3>Referral</h3>
+        <p>Invite links can reward the inviter (L1/L2 network rules) based on the invited user’s actions or purchases. The referral system is designed to be transparent and abuse-resistant.</p>
+
+        <h3>Rewards & Payouts</h3>
+        <p>Rewards may include EP, limited drops, and future USDC on-chain utilities. Any on-chain payout flow should use clear limits, audit logs, and safe guards (rate limits, idempotency keys, and treasury checks).</p>
+
+        <h3>Security & Fairness</h3>
+        <ul>
+          <li>One wallet = one account identity (wallet signature auth).</li>
+          <li>No duplicate purchases / no duplicate EP awards (idempotent checks).</li>
+          <li>Anti-abuse controls and daily caps for task rewards.</li>
+        </ul>
+      </div>
+      <div className="modalBottom">
+        <button className="btn secondary" onClick={() => setIsWhitepaperOpen(false)}>Close</button>
+      </div>
+    </div>
+  </div>
+) : null}
+
+{isRoadmapOpen ? (
+  <div className="modalBg" onClick={(e) => { if (e.target === e.currentTarget) { setIsRoadmapOpen(false) } }}>
+    <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modalTop">
+        <div>
+          <div className="modalTitle">Roadmap</div>
+          <div className="modalSub">Where we’re going next</div>
+        </div>
+        <button className="xBtn" onClick={() => setIsRoadmapOpen(false)}>×</button>
+      </div>
+      <div className="modalBody">
+        <h3>Phase 1 — Foundation (Now)</h3>
+        <ul>
+          <li>Stable dashboard + wallet login</li>
+          <li>Avatar Store (limited drops, server-side inventory)</li>
+          <li>EP economy basics + daily tasks</li>
+          <li>Referral attach + tracking improvements</li>
+        </ul>
+
+        <h3>Phase 2 — Energy Skunk Game</h3>
+        <ul>
+          <li>"Energy Skunk Game" launch (Coming Soon)</li>
+          <li>Gameplay loops that generate/consume EP</li>
+          <li>Leaderboards + seasonal resets</li>
+        </ul>
+
+        <h3>Phase 3 — Rewards Expansion</h3>
+        <ul>
+          <li>More avatar series + special drops</li>
+          <li>Better social tasks (share flows, invites, campaigns)</li>
+          <li>Ops/admin tooling (logs, reports, manual approvals if needed)</li>
+        </ul>
+
+        <h3>Phase 4 — On-chain Utilities</h3>
+        <ul>
+          <li>USDC flows with strong safeguards (limits, queues, confirmations)</li>
+          <li>Transparency dashboards (treasury + payout history)</li>
+        </ul>
+      </div>
+      <div className="modalBottom">
+        <button className="btn secondary" onClick={() => setIsRoadmapOpen(false)}>Close</button>
       </div>
     </div>
   </div>
