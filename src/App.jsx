@@ -3,6 +3,7 @@ import bs58 from 'bs58'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import { createAssociatedTokenAccountInstruction, createTransferCheckedInstruction, getAssociatedTokenAddress } from '@solana/spl-token'
 import AvatarStore from './AvatarStore'
+import TeamReport from './TeamReport'
 import "./styles/avatarstore.glass.css"
 import { UI_V1_ENABLED } from './config/features'
 import UiV1Root from './ui-v1/UiV1Root'
@@ -227,6 +228,7 @@ const [wallet, setWallet] = useState('')
 
   const [isBuyCoinOpen, setIsBuyCoinOpen] = useState(false)
   const [isAvatarStoreOpen, setIsAvatarStoreOpen] = useState(false)
+  const [isReportOpen, setIsReportOpen] = useState(false)
 
   const [isTermsOpen, setIsTermsOpen] = useState(false)
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
@@ -873,6 +875,7 @@ function doFollow(kind) {
           )}
 
           <button className="btn ghostBtn" onClick={() => setIsAvatarStoreOpen(true)}>Avatar Store</button>
+          <button className="btn ghostBtn" onClick={() => setIsReportOpen(true)}>Team Report</button>
 <button className="btn coinBtn" onClick={() => setIsBuyCoinOpen(true)}>
 
             BUY 4T COIN
@@ -1685,6 +1688,15 @@ function doFollow(kind) {
         userId={wallet}
         onChanged={refresh}
       />
+
+
+      <TeamReport
+        open={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        apiBase={API_BASE}
+        bearerToken={bearerToken}
+      />
+
     </div>
   )
 

@@ -12,7 +12,7 @@ import './kudiSideMenu.css'
  * - onConnectWallet(): open/connect wallet flow
  * - onOpenAvatarStore(): navigate to Avatar Store view
  */
-export default function KudiSideMenu({ onConnectWallet, onOpenAvatarStore }) {
+export default function KudiSideMenu({ onConnectWallet, onOpenAvatarStore, onOpenReport }) {
   const [open, setOpen] = useState(false)
   const [activeKey, setActiveKey] = useState(null)
 
@@ -43,6 +43,11 @@ export default function KudiSideMenu({ onConnectWallet, onOpenAvatarStore }) {
     if (key === 'avatar' && typeof onOpenAvatarStore === 'function') {
       closeAll()
       onOpenAvatarStore()
+      return
+    }
+    if (key === 'report' && typeof onOpenReport === 'function') {
+      closeAll()
+      onOpenReport()
       return
     }
     setActiveKey(key)

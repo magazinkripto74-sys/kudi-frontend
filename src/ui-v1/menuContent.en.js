@@ -3,6 +3,7 @@
 export const MENU_ORDER = [
   { key: 'connect', label: 'Connect Wallet' },
   { key: 'avatar', label: 'Avatar Store' },
+  { key: 'report', label: 'Team Report' },
   { key: 'how', label: 'How to Play' },
   { key: 'packages', label: 'Packages' },
   { key: 'faq', label: 'Skunk Project (FAQ)' },
@@ -65,6 +66,16 @@ export const MENU_CONTENT = {
       'Withdraw rules: min/max limits apply.',
       '',
       'Note: Full guide text will be added.',
+    ],
+  },
+
+  report: {
+    title: 'Team Report',
+    body: [
+      'View your L1/L2 network performance and daily EP stats.',
+      'Open the Team Report screen from the main dashboard button.',
+      '',
+      'Note: This menu item is informational; the full report is on the dashboard button.',
     ],
   },
   packages: {
