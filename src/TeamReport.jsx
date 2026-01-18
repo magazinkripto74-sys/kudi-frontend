@@ -84,7 +84,7 @@ export default function TeamReport({ open, onClose, apiBase, bearerToken }) {
                 : 'Your network performance (L1 + L2) via referral code.'}
             </div>
           </div>
-          <button className="iconBtn" onClick={onClose} aria-label="Close">✕</button>
+          <button className="kudiIconBtn" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
         {/* Casino video header */}
@@ -195,14 +195,14 @@ export default function TeamReport({ open, onClose, apiBase, bearerToken }) {
                         <b className="kudiTopEp">{u.ep}</b>
                       </div>
                     )) : (
-                      <div className="kudiReportEmpty" style={{ padding: 10 }}>No data yet today.</div>
+                      <div className="kudiReportEmpty kudiReportWait" style={{ padding: 10 }}>No data yet today. ⏳</div>
                     )}
                   </div>
                 </div>
               </div>
 
               <div className="kudiReportBottom">
-                <button className="btn secondary" onClick={onClose}>Close</button>
+                <button className="btn secondary kudiNeonBtn" onClick={onClose}>Close</button>
               </div>
             </>
           )}
