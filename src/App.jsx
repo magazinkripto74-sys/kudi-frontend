@@ -14,6 +14,9 @@ import './ui-v1/socialLinks.css'
 import LeaderboardTicker from './ui-v1/LeaderboardTicker'
 import './ui-v1/leaderboardTicker.css'
 
+import AquariumBanner from './ui-v1/AquariumBanner'
+import './ui-v1/aquariumBanner.css'
+
 
 
 import VideoBox from './ui-v1/VideoBox'
@@ -1263,6 +1266,9 @@ function doFollow(kind) {
           
         </div>
       </div>
+
+
+      <AquariumBanner />
 
 
 <div className="footerWrap">
