@@ -1,0 +1,332 @@
+/* KUDI SKUNK - Casino Slot (UI only)
+   Goal:
+   - Images MUST fully fill the reel window (object-fit: cover)
+   - Neon / casino vibe
+   - Button looks premium
+*/
+
+.slotCard{
+  width: min(980px, calc(100% - 32px));
+  margin: 18px auto 10px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(10, 10, 14, 0.58);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 20px 70px rgba(0,0,0,0.50);
+  overflow: hidden;
+  position: relative;
+}
+
+.slotCard::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(130,45,255,0.32),
+    rgba(0,240,255,0.22),
+    rgba(255,210,70,0.18),
+    rgba(130,45,255,0.32)
+  );
+  opacity: 0.45;
+  filter: blur(18px);
+  pointer-events:none;
+}
+
+.slotCardHeader{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(90deg, rgba(130,45,255,0.22), rgba(0,240,255,0.12));
+  position: relative;
+  z-index: 2;
+}
+
+.slotTitle{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-weight: 950;
+  letter-spacing: 0.4px;
+  color: rgba(255,255,255,0.96);
+}
+
+.slotTitleIcon{ filter: drop-shadow(0 8px 14px rgba(0,0,0,0.55)); }
+
+.slotHint{
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+}
+
+.slotMachine{
+  position: relative;
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 14px;
+  z-index: 2;
+}
+
+.slotOverlayGlow{
+  pointer-events:none;
+  position:absolute;
+  inset: -50px;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(130,45,255,0.20), transparent 45%),
+    radial-gradient(circle at 85% 35%, rgba(0,240,255,0.16), transparent 45%),
+    radial-gradient(circle at 55% 95%, rgba(255,210,70,0.15), transparent 55%);
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+.slotReel{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.06),
+    0 14px 34px rgba(0,0,0,0.42);
+  padding: 12px 12px 10px;
+  text-align:center;
+  position: relative;
+  overflow: hidden;
+}
+
+.slotReel::after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background: linear-gradient(135deg, rgba(130,45,255,0.20), rgba(0,240,255,0.12), rgba(255,210,70,0.10));
+  opacity: 0.55;
+  filter: blur(16px);
+  pointer-events:none;
+}
+
+/* THE WINDOW (image MUST fill) */
+.slotSymbol{
+  height: 112px;
+  border-radius: 14px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.14), rgba(0,0,0,0.26));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* FULL COVER FIX */
+.slotSymbolImg{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;        /* <- THIS IS THE KEY */
+  object-position: center;
+  transform: scale(1.06);
+  filter: drop-shadow(0 12px 22px rgba(0,0,0,0.58));
+}
+
+.slotEmojiFallback{
+  font-size: 52px;
+  line-height: 52px;
+  position: relative;
+  z-index: 2;
+}
+
+/* moving scanline for casino vibe */
+.slotSymbolScan{
+  position:absolute;
+  left:-40%;
+  top:0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: skewX(-18deg);
+  opacity: 0.40;
+  pointer-events:none;
+  animation: slotScan 2.4s linear infinite;
+}
+
+@keyframes slotScan{
+  0%{ transform: translateX(-120%) skewX(-18deg); }
+  100%{ transform: translateX(260%) skewX(-18deg); }
+}
+
+.slotLabel{
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.82);
+  letter-spacing: 0.25px;
+  position: relative;
+  z-index: 1;
+}
+
+.slotBottomRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap: 12px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.14);
+  position: relative;
+  z-index: 2;
+}
+
+.slotMessage{
+  font-size: 12px;
+  color: rgba(255,255,255,0.82);
+}
+
+/* PREMIUM SPIN BUTTON */
+.slotSpinButton{
+  position: relative;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: linear-gradient(90deg, rgba(130,45,255,0.70), rgba(0,240,255,0.48));
+  color: rgba(255,255,255,0.97);
+  font-weight: 950;
+  letter-spacing: 1.0px;
+  cursor: pointer;
+  box-shadow:
+    0 14px 36px rgba(0,0,0,0.45),
+    0 0 22px rgba(130,45,255,0.18),
+    0 0 18px rgba(0,240,255,0.12);
+  overflow: hidden;
+}
+
+.slotSpinText{ position: relative; z-index: 2; }
+
+.slotSpinGlow{
+  content:"";
+  position:absolute;
+  inset:-60px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.18), transparent 45%),
+    radial-gradient(circle at 70% 40%, rgba(255,210,70,0.18), transparent 55%),
+    radial-gradient(circle at 50% 90%, rgba(130,45,255,0.20), transparent 55%);
+  opacity: 0.80;
+  animation: glowDrift 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes glowDrift{
+  from{ transform: translateY(0px) scale(1.00); }
+  to{ transform: translateY(-8px) scale(1.05); }
+}
+
+.slotSpinButton:hover{
+  transform: translateY(-1px);
+}
+
+.slotSpinButton:active{
+  transform: translateY(0px);
+}
+
+.slotSpinButton:disabled{
+  opacity: 0.62;
+  cursor: not-allowed;
+  filter: grayscale(0.2);
+}
+
+/* Spinning state: reels pulse + border flicker */
+.slotCard.isSpinning .slotReel{
+  animation: slotPulse 0.14s infinite alternate;
+}
+
+@keyframes slotPulse{
+  from{
+    transform: translateY(0px);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06), 0 14px 34px rgba(0,0,0,0.42);
+  }
+  to{
+    transform: translateY(-1px);
+    box-shadow:
+      0 0 26px rgba(130,45,255,0.24),
+      0 0 22px rgba(0,240,255,0.16),
+      inset 0 0 0 1px rgba(255,255,255,0.10);
+  }
+}
+
+@media (max-width: 720px){
+  .slotMachine{ grid-template-columns: 1fr; }
+  .slotSymbol{ height: 118px; }
+}
+
+
+/* WIN TOAST (bottom-left) */
+.slotToastWin{
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 9999;
+  max-width: min(520px, calc(100vw - 36px));
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(10, 10, 14, 0.68);
+  backdrop-filter: blur(14px);
+  color: rgba(255,255,255,0.96);
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  box-shadow:
+    0 18px 60px rgba(0,0,0,0.55),
+    0 0 26px rgba(130,45,255,0.20),
+    0 0 18px rgba(0,240,255,0.12);
+  animation: slotToastIn 180ms ease-out;
+}
+
+@keyframes slotToastIn{
+  from{ transform: translateY(8px); opacity: 0; }
+  to{ transform: translateY(0px); opacity: 1; }
+}
+
+/* CONFETTI (lightweight CSS burst) */
+.slotConfettiLayer{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+.slotConfettiOrigin{
+  position: absolute;
+  left: 34px;
+  bottom: 58px;
+  width: 1px;
+  height: 1px;
+}
+
+.slotConfettiPiece{
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--size);
+  height: calc(var(--size) * 0.65);
+  border-radius: 3px;
+  background: hsl(var(--h) 90% 62%);
+  transform: translate(0,0) rotate(0deg);
+  opacity: 0;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.45));
+  animation: slotConfettiFly var(--dur) ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+@keyframes slotConfettiFly{
+  0%{
+    opacity: 0;
+    transform: translate(0px, 0px) rotate(0deg);
+  }
+  8%{ opacity: 1; }
+  100%{
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) rotate(var(--rot));
+  }
+}
+
+@media (max-width: 720px){
+  .slotToastWin{ left: 12px; bottom: 12px; }
+  .slotConfettiOrigin{ left: 24px; bottom: 52px; }
+}

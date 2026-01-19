@@ -22,6 +22,7 @@ import './ui-v1/aquariumBanner.css'
 
 import VideoBox from './ui-v1/VideoBox'
 import './ui-v1/videoBox.css'
+import SlotMachine from './SlotMachine'
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 
 
@@ -891,6 +892,9 @@ function doFollow(kind) {
       </div>
 
             <VideoBox src="/media/hero16x9.mp4" />
+
+            {/* Daily Slot (between hero video and leaderboard) */}
+            <SlotMachine />
 
       <div className="leaderHero">
         
