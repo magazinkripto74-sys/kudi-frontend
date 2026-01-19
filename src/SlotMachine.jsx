@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import './styles/slotMachine.casino.css'
 
 // Daily Slot (backend-connected)
-// - 1 spin per UTC day (UTC 00:00 reset)
+// - Unlimited tries per UTC day until you hit 3-of-a-kind (UTC 00:00 reset)
 // - Result + EP award are server-side (anti-cheat)
 
 // Keep this list aligned with files in:
@@ -220,7 +220,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
   const spin = async () => {
     if (spinning) return
     if (!canSpin) {
-      setWinToast(`Daily spin already used. Reset: 00:00 UTC`)
+      setWinToast(`Already WON today. Reset: 00:00 UTC`)
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
       return
@@ -275,14 +275,11 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
     const final = [keyToIcon(finalKeys[0]), keyToIcon(finalKeys[1]), keyToIcon(finalKeys[2])]
     setReels(final)
 
+    setCanSpin(!!j.canSpin)
     setNextResetUtc(j.nextResetUtc || nextResetUtc || '')
 
     const rewardEp = Number(j.rewardEp || 0)
     const isTriple = rewardEp > 0
-    const alreadyWon = !!j.alreadyWon
-
-    // v2: lock ONLY if user has WON today
-    setCanSpin(!(isTriple || alreadyWon))
 
     if (isTriple) {
       setConfettiSeed(Date.now())
@@ -291,15 +288,10 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       setWinToast(`Congratulations! +${rewardEp} EP has been added to your account.`)
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2600)
-    } else if (alreadyWon) {
-      setWinToast(`Daily spin already completed. Reset: 00:00 UTC`)
+    } else {
+      setWinToast('No match — spin again!')
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
-    } else {
-      // not a triple => user can keep trying
-      setWinToast('No match — try again!')
-      window.clearTimeout(window.__slotToastT)
-      window.__slotToastT = window.setTimeout(() => setWinToast(null), 1600)
     }
 
     setSpinning(false)
@@ -329,7 +321,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       {winToast ? <div className="slotToastWin">{winToast}</div> : null}
 
       <div className="slotBottomRow">
-        <button className="slotSpinButton" onClick={spin} disabled={spinning || !canSpin || !API_BASE || !token}>
+        <button className="slotSpinButton" onClick={spin} disabled={spinning || !API_BASE || !token}>
           <span className="slotSpinText">
             {spinning ? 'SPINNING' : canSpin ? 'SPIN' : 'DONE'}
           </span>
