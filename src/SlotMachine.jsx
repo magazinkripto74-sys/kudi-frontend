@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import './styles/slotMachine.casino.css'
 
-// Daily Slot (UI-only demo)
-// - 3 reels
-// - No EP payout yet (Step-2 later)
-// - Images live in /public/media/slot/*.png
+// Daily Slot (backend-connected)
+// - 1 spin per UTC day (UTC 00:00 reset)
+// - Result + EP award are server-side (anti-cheat)
 
 // Keep this list aligned with files in:
 //   public/media/slot/
@@ -12,13 +11,6 @@ import './styles/slotMachine.casino.css'
 //   - kudi-baba.png
 //   - skunk.png
 //   - 4t-coin.png
-
-// --- Confetti + Toast (MP4 removed) ---
-const REWARD_MAP = {
-  baba: 15,
-  skunk: 10,
-  coin: 5,
-}
 
 function ConfettiBurst({ seed }) {
   // Re-generate pieces each time seed changes
@@ -80,6 +72,35 @@ const DEFAULT_ICONS = [
   { key: 'skunk', label: 'SKUNK', src: '/media/slot/skunk.png', fallback: '🦨' },
 ]
 
+function getApiBase() {
+  // Vite env
+  // eslint-disable-next-line no-undef
+  const base = (import.meta && import.meta.env && import.meta.env.VITE_API_BASE) ? import.meta.env.VITE_API_BASE : ''
+  return String(base || '').replace(/\/$/, '')
+}
+
+function getAuthToken() {
+  try {
+    return (
+      localStorage.getItem('token') ||
+      localStorage.getItem('authToken') ||
+      localStorage.getItem('sessionToken') ||
+      sessionStorage.getItem('token') ||
+      ''
+    )
+  } catch (e) {
+    return ''
+  }
+}
+
+function mapBackendIdToKey(id) {
+  const s = String(id || '').toLowerCase()
+  if (s === 'kudi_baba' || s === 'kudi-baba' || s === 'baba') return 'baba'
+  if (s === '4t_coin' || s === '4t-coin' || s === 'coin') return 'coin'
+  if (s === 'skunk') return 'skunk'
+  return 'coin'
+}
+
 function pickRandomIcon(icons) {
   return icons[Math.floor(Math.random() * icons.length)]
 }
@@ -123,39 +144,113 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
     pickRandomIcon(iconSet),
     pickRandomIcon(iconSet),
   ])
-  const [message, setMessage] = useState('Daily Spin (demo) — no EP yet.')
   const [winToast, setWinToast] = useState(null)
   const [confettiSeed, setConfettiSeed] = useState(0)
+  const [canSpin, setCanSpin] = useState(true)
+  const [nextResetUtc, setNextResetUtc] = useState('')
+
+  const API_BASE = getApiBase()
+  const token = getAuthToken()
+
+  // Fetch daily spin status
+  useEffect(() => {
+    const run = async () => {
+      if (!API_BASE || !token) {
+        setCanSpin(false)
+        return
+      }
+      try {
+        const r = await fetch(`${API_BASE}/slot/status`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        const j = await r.json()
+        if (j && j.ok) {
+          setCanSpin(!!j.canSpin)
+          setNextResetUtc(j.nextResetUtc || '')
+        }
+      } catch (e) {
+        // If backend unavailable, keep UX safe
+        setCanSpin(false)
+      }
+    }
+    run()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [API_BASE, token])
 
 
   const spin = async () => {
     if (spinning) return
+    if (!canSpin) {
+      setWinToast(`Daily spin already used. Reset: 00:00 UTC`)
+      window.clearTimeout(window.__slotToastT)
+      window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
+      return
+    }
+    if (!API_BASE || !token) {
+      setWinToast('Connect wallet to spin.')
+      window.clearTimeout(window.__slotToastT)
+      window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
+      return
+    }
 
     setSpinning(true)
 
-    // Fast spin animation
+    // Kick off backend spin in parallel with the animation
+    const spinReq = fetch(`${API_BASE}/slot/spin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({}),
+    }).then((r) => r.json())
+
+    // Animation
     for (let i = 0; i < 16; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       await new Promise((r) => setTimeout(r, 65))
       setReels([pickRandomIcon(iconSet), pickRandomIcon(iconSet), pickRandomIcon(iconSet)])
     }
 
-    // Final result
-    const final = [pickRandomIcon(iconSet), pickRandomIcon(iconSet), pickRandomIcon(iconSet)]
+    let j = null
+    try {
+      j = await spinReq
+    } catch (e) {
+      j = null
+    }
+
+    if (!j || !j.ok) {
+      setSpinning(false)
+      setWinToast('Spin failed. Try again later.')
+      window.clearTimeout(window.__slotToastT)
+      window.__slotToastT = window.setTimeout(() => setWinToast(null), 2400)
+      return
+    }
+
+    // Apply final server result
+    const ids = Array.isArray(j.result) ? j.result : []
+    const finalKeys = ids.length === 3 ? ids.map(mapBackendIdToKey) : ['coin', 'coin', 'coin']
+    const keyToIcon = (k) => iconSet.find((x) => x.key === k) || pickRandomIcon(iconSet)
+    const final = [keyToIcon(finalKeys[0]), keyToIcon(finalKeys[1]), keyToIcon(finalKeys[2])]
     setReels(final)
 
-    const isTriple = final.every((x) => x.key === final[0].key)
-    const reward = REWARD_MAP[final[0].key] || 0
+    setCanSpin(false)
+    setNextResetUtc(j.nextResetUtc || nextResetUtc || '')
 
-    const isJackpot = final.every((x) => x.key === 'baba')
+    const rewardEp = Number(j.rewardEp || 0)
+    const isTriple = rewardEp > 0
 
     if (isTriple) {
       setConfettiSeed(Date.now())
       window.clearTimeout(window.__slotConfettiT)
       window.__slotConfettiT = window.setTimeout(() => setConfettiSeed(0), 1400)
-      setWinToast(`Congratulations! +${reward} EP has been added to your account.`)
+      setWinToast(`Congratulations! +${rewardEp} EP has been added to your account.`)
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2600)
+    } else {
+      setWinToast('Spin used. Come back tomorrow!')
+      window.clearTimeout(window.__slotToastT)
+      window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
     }
 
     setSpinning(false)
@@ -185,8 +280,10 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       {winToast ? <div className="slotToastWin">{winToast}</div> : null}
 
       <div className="slotBottomRow">
-        <button className="slotSpinButton" onClick={spin} disabled={spinning}>
-          <span className="slotSpinText">{spinning ? 'SPINNING' : 'SPIN'}</span>
+        <button className="slotSpinButton" onClick={spin} disabled={spinning || !canSpin || !API_BASE || !token}>
+          <span className="slotSpinText">
+            {spinning ? 'SPINNING' : canSpin ? 'SPIN' : 'DONE'}
+          </span>
           <span className="slotSpinGlow" />
         </button>
       </div>
