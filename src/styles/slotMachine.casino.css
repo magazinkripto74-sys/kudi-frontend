@@ -126,8 +126,13 @@
 .slotSpinBtn:disabled{opacity:0.6; cursor:not-allowed;}
 
 @media (max-width: 720px){
-  .slotMachine{ grid-template-columns: 1fr; }
-  .slotSymbol{ height: 74px; }
+  .slotMachine{ grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .slotSymbol{ height: 64px; }
+  .slotLabel{ font-size: 10px; }
+  .slotReel{ padding: 8px 8px 6px; border-radius: 12px; }
+  .slotSymbol{ border-radius: 10px; }
+  .slotSpinButton{ min-width: 120px; }
+}
   /* keep images filling the reel */
   .slotSymbol img{ width: 100%; height: 100%; }
 }
