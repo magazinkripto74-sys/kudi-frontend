@@ -275,11 +275,14 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
     const final = [keyToIcon(finalKeys[0]), keyToIcon(finalKeys[1]), keyToIcon(finalKeys[2])]
     setReels(final)
 
-    setCanSpin(false)
     setNextResetUtc(j.nextResetUtc || nextResetUtc || '')
 
     const rewardEp = Number(j.rewardEp || 0)
     const isTriple = rewardEp > 0
+    const alreadyWon = !!j.alreadyWon
+
+    // v2: lock ONLY if user has WON today
+    setCanSpin(!(isTriple || alreadyWon))
 
     if (isTriple) {
       setConfettiSeed(Date.now())
@@ -288,10 +291,15 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       setWinToast(`Congratulations! +${rewardEp} EP has been added to your account.`)
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2600)
-    } else {
-      setWinToast('Spin used. Come back tomorrow!')
+    } else if (alreadyWon) {
+      setWinToast(`Daily spin already completed. Reset: 00:00 UTC`)
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
+    } else {
+      // not a triple => user can keep trying
+      setWinToast('No match — try again!')
+      window.clearTimeout(window.__slotToastT)
+      window.__slotToastT = window.setTimeout(() => setWinToast(null), 1600)
     }
 
     setSpinning(false)
