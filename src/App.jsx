@@ -894,7 +894,7 @@ function doFollow(kind) {
             <VideoBox src="/media/hero16x9.mp4" />
 
             {/* Daily Slot (between hero video and leaderboard) */}
-            <SlotMachine />
+            <SlotMachine bearerToken={bearerToken} wallet={wallet} sessionId={getSessionId()} />
 
       <div className="leaderHero">
         

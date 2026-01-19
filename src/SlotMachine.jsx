@@ -109,6 +109,8 @@ function getAuthToken() {
 function getSessionId() {
   try {
     return (
+      // App.jsx uses sessionStorage as primary
+      sessionStorage.getItem('kudi_session_id') ||
       localStorage.getItem('kudi_session_id') ||
       localStorage.getItem('session_id') ||
       ''
@@ -120,7 +122,12 @@ function getSessionId() {
 
 function getWallet() {
   try {
-    return localStorage.getItem('kudi_wallet') || ''
+    return (
+      localStorage.getItem('kudi_wallet') ||
+      localStorage.getItem('wallet') ||
+      localStorage.getItem('walletAddress') ||
+      ''
+    )
   } catch (e) {
     return ''
   }
@@ -165,7 +172,13 @@ function SlotSymbol({ symbol, spinning }) {
   )
 }
 
-export default function SlotMachine({ icons = DEFAULT_ICONS }) {
+export default function SlotMachine({
+  icons = DEFAULT_ICONS,
+  // Prefer App-managed auth state (more reliable on iOS/Safari)
+  wallet: walletProp,
+  bearerToken: bearerTokenProp,
+  sessionId: sessionIdProp,
+}) {
   const iconSet = useMemo(() => {
     const safe = Array.isArray(icons) ? icons.filter(Boolean) : []
     return safe.length ? safe : DEFAULT_ICONS
@@ -183,14 +196,15 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
   const [nextResetUtc, setNextResetUtc] = useState('')
 
   const API_BASE = getApiBase()
-  const token = getAuthToken()
-  const sessionId = getSessionId()
-  const wallet = getWallet()
+  const token = (String(bearerTokenProp || '').trim() || getAuthToken()).trim()
+  const sessionId = String(sessionIdProp || '').trim() || getSessionId()
+  const wallet = String(walletProp || '').trim() || getWallet()
 
   // Fetch daily spin status
   useEffect(() => {
     const run = async () => {
       if (!API_BASE || !token) {
+        // Don't show DONE when user is not authenticated
         setCanSpin(false)
         return
       }
@@ -214,7 +228,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
     }
     run()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [API_BASE, token])
+  }, [API_BASE, token, wallet, sessionId])
 
 
   const spin = async () => {
@@ -323,7 +337,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       <div className="slotBottomRow">
         <button className="slotSpinButton" onClick={spin} disabled={spinning || !API_BASE || !token}>
           <span className="slotSpinText">
-            {spinning ? 'SPINNING' : canSpin ? 'SPIN' : 'DONE'}
+            {spinning ? 'SPINNING' : (!token ? 'CONNECT' : (canSpin ? 'SPIN' : 'DONE'))}
           </span>
           <span className="slotSpinGlow" />
         </button>
