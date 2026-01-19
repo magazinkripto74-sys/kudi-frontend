@@ -22,6 +22,9 @@
 .slotTitle{font-weight:800; letter-spacing:0.2px; color: rgba(255,255,255,0.95);}
 .slotSub{font-size:12px; color: rgba(255,255,255,0.72);}
 
+/* Hide internal/dev copy (e.g. "step-2") from users */
+.slotSub{display:none;}
+
 .slotMachine{
   position: relative;
   display:grid;
@@ -50,10 +53,11 @@
 }
 
 .slotSymbol img{
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55));
+  display: block;
 }
 
 .slotEmoji{
@@ -92,7 +96,7 @@
 .slotFooter{
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:center;
   padding: 12px 14px 14px;
   border-top: 1px solid rgba(255,255,255,0.08);
   background: rgba(0,0,0,0.12);
@@ -102,6 +106,9 @@
   font-size: 12px;
   color: rgba(255,255,255,0.78);
 }
+
+/* Hide internal/dev status text under reels */
+.slotMsg{display:none;}
 
 .slotSpinBtn{
   height: 38px;
@@ -121,5 +128,237 @@
 @media (max-width: 720px){
   .slotMachine{ grid-template-columns: 1fr; }
   .slotSymbol{ height: 74px; }
-  .slotSymbol img{ width: 62px; height: 62px; }
+  /* keep images filling the reel */
+  .slotSymbol img{ width: 100%; height: 100%; }
+}
+
+
+/* --- KUDI-SLOT-SPIN-CENTER-CLEAN overrides --- */
+.slotBottomRow{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 14px 14px 16px;
+}
+
+/* Keep SPIN centered under 3 tiles on mobile/web */
+.slotSpinButton{
+  margin: 0 auto;
+}
+
+
+/* --- Spin button polish --- */
+.slotSpinButton{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 160px;
+  height: 44px;
+  padding: 0 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.16);
+  background: linear-gradient(90deg, rgba(130,45,255,0.62), rgba(0,240,255,0.46));
+  color: rgba(255,255,255,0.96);
+  font-weight: 900;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.38);
+  transform: translateZ(0);
+  isolation: isolate;
+}
+
+.slotSpinButton:hover{
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.slotSpinButton:active{
+  transform: translateY(0px) scale(0.99);
+}
+
+.slotSpinButton:disabled{
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+}
+
+.slotSpinText{
+  position: relative;
+  z-index: 2;
+}
+
+.slotSpinGlow{
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), transparent 55%),
+    radial-gradient(circle at 80% 40%, rgba(0,240,255,0.22), transparent 55%),
+    radial-gradient(circle at 40% 90%, rgba(255,210,70,0.18), transparent 60%);
+  opacity: 0.75;
+  z-index: 1;
+  filter: blur(10px);
+  animation: slotGlowPulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.slotSpinButton:disabled .slotSpinGlow{
+  animation: none;
+  opacity: 0.35;
+}
+
+@keyframes slotGlowPulse{
+  0%, 100% { transform: scale(0.98); opacity: 0.65; }
+  50% { transform: scale(1.05); opacity: 0.95; }
+}
+
+
+/* --- KUDI final fixes: confetti + sizing (v3) --- */
+.slotCard{ position: relative; }
+
+/* Confetti (mini burst) */
+.slotConfettiLayer{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 50;
+}
+.slotConfettiOrigin{
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+}
+.slotConfettiPiece{
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  background: hsl(var(--h) 95% 60%);
+  border-radius: 2px;
+  opacity: 0;
+  transform: translate(0,0) rotate(0deg);
+  animation: slotConfettiFly var(--dur) cubic-bezier(0.2,0.8,0.2,1) forwards;
+  animation-delay: var(--delay);
+  box-shadow: 0 10px 18px rgba(0,0,0,0.25);
+}
+@keyframes slotConfettiFly{
+  0%{ opacity: 0; transform: translate(0,0) rotate(0deg) scale(1); }
+  10%{ opacity: 1; }
+  100%{ opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--rot)) scale(0.9); }
+}
+
+/* Win toast (optional) */
+.slotToastWin{
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.92);
+  font-size: 12px;
+  z-index: 60;
+  max-width: min(520px, calc(100% - 28px));
+  text-align: center;
+}
+
+/* Keep slot box compact & SPIN centered */
+.slotBottomRow{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 10px 14px 14px;
+}
+
+/* Spin button: smaller but still premium */
+.slotSpinButton{
+  min-width: 124px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 12px;
+}
+
+.slotSpinGlow{
+  inset: -4px;
+  filter: blur(8px);
+  opacity: 0.7;
+  animation-duration: 2.8s;
+}
+
+
+/* --- KUDI slot visual match + confetti force (v4) --- */
+
+/* Make slot area blend with page (no mismatched panel color) */
+.slotCard{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  overflow: visible !important; /* don't clip confetti */
+}
+
+.slotCardHeader{
+  background: transparent !important;
+  border-bottom: 0 !important;
+  padding-bottom: 8px;
+}
+
+/* Keep 3 tiles row, but remove extra colored backdrop */
+.slotMachine{
+  background: transparent !important;
+}
+
+/* Tile card should match existing site glass */
+.slotReel{
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.10) !important;
+}
+
+/* IMPORTANT: image background behind the PNG should match page (fix visual "box") */
+.slotSymbol{
+  background: rgba(0,0,0,0.10) !important;
+}
+
+/* If your PNG has rounded corners, keep clean */
+.slotSymbolImg{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Confetti must be on top of everything */
+.slotConfettiLayer{ z-index: 9999 !important; }
+.slotConfettiOrigin{ top: 35% !important; }
+
+/* If any parent sets overflow hidden, this keeps burst visible */
+.slotMachine, .slotReel{ overflow: visible !important; }
+
+
+/* --- KUDI slot match background + confetti replay (v5) --- */
+
+/* Kill the colored overlay that makes panel look different */
+.slotOverlayGlow{
+  display: none !important;
+}
+
+/* Blend slot container with page glass (no odd green/blue block) */
+.slotMachine{
+  background: transparent !important;
+}
+
+/* Tiles: subtle glass, same vibe as other boxes */
+.slotReel{
+  background: rgba(255,255,255,0.035) !important;
+  backdrop-filter: blur(12px);
+}
+
+/* Symbol area: transparent so image looks natural */
+.slotSymbol{
+  background: transparent !important;
 }

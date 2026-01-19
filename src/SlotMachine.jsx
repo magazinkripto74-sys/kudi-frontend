@@ -35,9 +35,9 @@ function ConfettiBurst({ seed }) {
       const r3 = rng(i * 3 + 2)
 
       const angle = (-70 + r1 * 140) * (Math.PI / 180)
-      const dist = 160 + r2 * 220
+      const dist = 95 + r2 * 150
       const x = Math.cos(angle) * dist
-      const y = -Math.sin(Math.abs(angle)) * dist - (120 + r3 * 180)
+      const y = -Math.sin(Math.abs(angle)) * dist - (80 + r3 * 120)
 
       return {
         id: i,
@@ -132,7 +132,6 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
     if (spinning) return
 
     setSpinning(true)
-    setMessage('Spinning...')
 
     // Fast spin animation
     for (let i = 0; i < 16; i += 1) {
@@ -149,10 +148,11 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
     const reward = REWARD_MAP[final[0].key] || 0
 
     const isJackpot = final.every((x) => x.key === 'baba')
-    setMessage(isJackpot ? 'JACKPOT! (EP step-2’de bağlayacağız)' : 'Nice! (EP step-2’de bağlayacağız)')
 
-    if (isTriple && reward > 0) {
+    if (isTriple) {
       setConfettiSeed(Date.now())
+      window.clearTimeout(window.__slotConfettiT)
+      window.__slotConfettiT = window.setTimeout(() => setConfettiSeed(0), 1400)
       setWinToast(`Congratulations! +${reward} EP has been added to your account.`)
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2600)
@@ -168,7 +168,6 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
           <span className="slotTitleIcon">🎰</span>
           <span>Daily Slot</span>
         </div>
-        <div className="slotHint">3x KUDI BABA = EP (step-2)</div>
       </div>
 
       <div className="slotMachine" aria-label="Daily slot machine">
@@ -182,11 +181,10 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
         ))}
       </div>
 
-      {confettiSeed ? <ConfettiBurst seed={confettiSeed} /> : null}
+      {confettiSeed ? <ConfettiBurst key={confettiSeed} seed={confettiSeed} /> : null}
       {winToast ? <div className="slotToastWin">{winToast}</div> : null}
 
       <div className="slotBottomRow">
-        <div className="slotMessage">{message}</div>
         <button className="slotSpinButton" onClick={spin} disabled={spinning}>
           <span className="slotSpinText">{spinning ? 'SPINNING' : 'SPIN'}</span>
           <span className="slotSpinGlow" />
