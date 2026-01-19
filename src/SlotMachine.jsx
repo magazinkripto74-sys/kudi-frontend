@@ -81,14 +81,25 @@ function getApiBase() {
 
 function getAuthToken() {
   try {
-    return (
+    const raw =
       localStorage.getItem('token') ||
       localStorage.getItem('authToken') ||
       localStorage.getItem('sessionToken') ||
       localStorage.getItem('kudi_bearer_token') ||
       sessionStorage.getItem('token') ||
       ''
-    )
+
+    const t = String(raw || '').trim()
+    if (!t) return ''
+
+    // If already "Bearer xxx" normalize it
+    if (/^bearer\s+/i.test(t)) return t.replace(/^bearer\s+/i, '').trim()
+
+    // Our backend session token format: "sess_..."
+    if (t.startsWith('sess_')) return t
+
+    // fallback (older tokens)
+    return t
   } catch (e) {
     return ''
   }
@@ -102,6 +113,14 @@ function getSessionId() {
       localStorage.getItem('session_id') ||
       ''
     )
+  } catch (e) {
+    return ''
+  }
+}
+
+function getWallet() {
+  try {
+    return localStorage.getItem('kudi_wallet') || ''
   } catch (e) {
     return ''
   }
@@ -166,6 +185,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
   const API_BASE = getApiBase()
   const token = getAuthToken()
   const sessionId = getSessionId()
+  const wallet = getWallet()
 
   // Fetch daily spin status
   useEffect(() => {
@@ -179,6 +199,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
           headers: {
           Authorization: `Bearer ${token}`,
           ...(sessionId ? { 'x-session-id': sessionId } : {}),
+          ...(wallet ? { 'x-wallet': wallet } : {}),
         },
         })
         const j = await r.json()
@@ -220,6 +241,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
         ...(sessionId ? { 'x-session-id': sessionId } : {}),
+        ...(wallet ? { 'x-wallet': wallet } : {}),
       },
       body: JSON.stringify({}),
     }).then((r) => r.json())
