@@ -85,7 +85,21 @@ function getAuthToken() {
       localStorage.getItem('token') ||
       localStorage.getItem('authToken') ||
       localStorage.getItem('sessionToken') ||
+      localStorage.getItem('kudi_bearer_token') ||
       sessionStorage.getItem('token') ||
+      ''
+    )
+  } catch (e) {
+    return ''
+  }
+}
+
+
+function getSessionId() {
+  try {
+    return (
+      localStorage.getItem('kudi_session_id') ||
+      localStorage.getItem('session_id') ||
       ''
     )
   } catch (e) {
@@ -151,6 +165,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
 
   const API_BASE = getApiBase()
   const token = getAuthToken()
+  const sessionId = getSessionId()
 
   // Fetch daily spin status
   useEffect(() => {
@@ -161,7 +176,10 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       }
       try {
         const r = await fetch(`${API_BASE}/slot/status`, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+          Authorization: `Bearer ${token}`,
+          ...(sessionId ? { 'x-session-id': sessionId } : {}),
+        },
         })
         const j = await r.json()
         if (j && j.ok) {
@@ -201,6 +219,7 @@ export default function SlotMachine({ icons = DEFAULT_ICONS }) {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
+        ...(sessionId ? { 'x-session-id': sessionId } : {}),
       },
       body: JSON.stringify({}),
     }).then((r) => r.json())
