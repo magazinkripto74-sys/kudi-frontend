@@ -229,6 +229,7 @@ const [wallet, setWallet] = useState('')
 
   const [isBuyCoinOpen, setIsBuyCoinOpen] = useState(false)
   const [isAvatarStoreOpen, setIsAvatarStoreOpen] = useState(false)
+  const [activeMiniGame, setActiveMiniGame] = useState('dashboard')
   const [isReportOpen, setIsReportOpen] = useState(false)
 
   const [isTermsOpen, setIsTermsOpen] = useState(false)
@@ -894,7 +895,105 @@ function doFollow(kind) {
             <VideoBox src="/media/hero16x9.mp4" />
 
             {/* Daily Slot (between hero video and leaderboard) */}
-            <SlotMachine bearerToken={bearerToken} wallet={wallet} sessionId={getSessionId()} />
+            
+          {activeMiniGame === 'slot' ? (
+            <div className="miniGamePage">
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
+                <div>
+                  <div className="miniGamePageTitle">Slot</div>
+                  <div className="miniGamePageSub">Daily spin • Win 5/10/15 EP (1 win per UTC day)</div>
+                </div>
+                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
+                  Back
+                </button>
+              </div>
+              <SlotMachine bearerToken={bearerToken} wallet={wallet} sessionId={getSessionId()} />
+            </div>
+          ) : activeMiniGame === 'crash' ? (
+            <div className="miniGamePage">
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
+                <div>
+                  <div className="miniGamePageTitle">Crash</div>
+                  <div className="miniGamePageSub">Coming soon. Daily max reward: 10 EP.</div>
+                </div>
+                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
+                  Back
+                </button>
+              </div>
+            </div>
+          ) : activeMiniGame === 'target' ? (
+            <div className="miniGamePage">
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
+                <div>
+                  <div className="miniGamePageTitle">Target Tap</div>
+                  <div className="miniGamePageSub">Coming soon. Reward: 5 EP.</div>
+                </div>
+                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
+                  Back
+                </button>
+              </div>
+            </div>
+          ) : activeMiniGame === 'reaction' ? (
+            <div className="miniGamePage">
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
+                <div>
+                  <div className="miniGamePageTitle">Reaction Test</div>
+                  <div className="miniGamePageSub">Coming soon. Reward: 5 EP.</div>
+                </div>
+                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
+                  Back
+                </button>
+              </div>
+            </div>
+          ) : activeMiniGame === 'mystery' ? (
+            <div className="miniGamePage">
+              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
+                <div>
+                  <div className="miniGamePageTitle">Mystery Box</div>
+                  <div className="miniGamePageSub">Coming soon. Daily reward: 0–8 EP.</div>
+                </div>
+                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
+                  Back
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="miniGamesWrap">
+              <div className="miniGamesTitle">Mini Games</div>
+              <div className="miniGamesGrid">
+                <div className="miniGameCard" role="button" tabIndex={0} onClick={() => setActiveMiniGame('slot')}>
+                  <div className="miniGameName">Slot</div>
+                  <div className="miniGameMeta">Daily spin • 5/10/15 EP</div>
+                  <span className="miniGameBadge">LIVE</span>
+                </div>
+
+                <div className="miniGameCard" role="button" tabIndex={0} onClick={() => setActiveMiniGame('crash')}>
+                  <div className="miniGameName">Crash</div>
+                  <div className="miniGameMeta">Max 10 EP / day</div>
+                  <span className="miniGameBadge">COMING SOON</span>
+                </div>
+
+                <div className="miniGameCard" role="button" tabIndex={0} onClick={() => setActiveMiniGame('target')}>
+                  <div className="miniGameName">Target Tap</div>
+                  <div className="miniGameMeta">Reward: 5 EP</div>
+                  <span className="miniGameBadge">COMING SOON</span>
+                </div>
+
+                <div className="miniGameCard" role="button" tabIndex={0} onClick={() => setActiveMiniGame('reaction')}>
+                  <div className="miniGameName">Reaction Test</div>
+                  <div className="miniGameMeta">Reward: 5 EP</div>
+                  <span className="miniGameBadge">COMING SOON</span>
+                </div>
+
+                <div className="miniGameCard" role="button" tabIndex={0} onClick={() => setActiveMiniGame('mystery')}>
+                  <div className="miniGameName">Mystery Box</div>
+                  <div className="miniGameMeta">Daily: 0–8 EP</div>
+                  <span className="miniGameBadge">COMING SOON</span>
+                </div>
+              </div>
+            </div>
+          )}
+
 
       <div className="leaderHero">
         
