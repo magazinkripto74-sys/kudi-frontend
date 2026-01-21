@@ -1076,3 +1076,17 @@ input:focus,select:focus{border-color: rgba(139,92,246,.8); box-shadow: 0 0 0 3p
   .miniGamesGrid .miniGameCard:nth-child(4):hover{box-shadow:0 0 0 1px rgba(239,68,68,0.22), 0 12px 34px rgba(0,0,0,0.40)}
   .miniGamesGrid .miniGameCard:nth-child(5):hover{box-shadow:0 0 0 1px rgba(14,165,233,0.22), 0 12px 34px rgba(0,0,0,0.40)}
 }
+
+
+/* Mobile fix: mini-game "COMING SOON" badge should not overlap the card */
+@media (max-width: 520px){
+  .miniGameBadge{
+    position: static !important;
+    display: inline-block;
+    margin-top: 8px;
+    margin-left: 0;
+  }
+  .miniGameCard{
+    padding-top: 14px;
+  }
+}

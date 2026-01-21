@@ -23,6 +23,12 @@ import './ui-v1/aquariumBanner.css'
 import VideoBox from './ui-v1/VideoBox'
 import './ui-v1/videoBox.css'
 import SlotMachine from './SlotMachine'
+
+import CrashGame from './games/CrashGame'
+import TargetTapGame from './games/TargetTapGame'
+import ReactionTestGame from './games/ReactionTestGame'
+import MysteryBoxGame from './games/MysteryBoxGame'
+import './games/games.css'
 const API_BASE = (import.meta.env.VITE_API_BASE || '').replace(/\/$/, '')
 
 
@@ -910,53 +916,13 @@ function doFollow(kind) {
               <SlotMachine bearerToken={bearerToken} wallet={wallet} sessionId={getSessionId()} />
             </div>
           ) : activeMiniGame === 'crash' ? (
-            <div className="miniGamePage">
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
-                <div>
-                  <div className="miniGamePageTitle">Crash</div>
-                  <div className="miniGamePageSub">Coming soon. Daily max reward: 10 EP.</div>
-                </div>
-                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
-                  Back
-                </button>
-              </div>
-            </div>
+            <CrashGame onBack={() => setActiveMiniGame('dashboard')} />
           ) : activeMiniGame === 'target' ? (
-            <div className="miniGamePage">
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
-                <div>
-                  <div className="miniGamePageTitle">Target Tap</div>
-                  <div className="miniGamePageSub">Coming soon. Reward: 5 EP.</div>
-                </div>
-                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
-                  Back
-                </button>
-              </div>
-            </div>
+            <TargetTapGame onBack={() => setActiveMiniGame('dashboard')} />
           ) : activeMiniGame === 'reaction' ? (
-            <div className="miniGamePage">
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
-                <div>
-                  <div className="miniGamePageTitle">Reaction Test</div>
-                  <div className="miniGamePageSub">Coming soon. Reward: 5 EP.</div>
-                </div>
-                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
-                  Back
-                </button>
-              </div>
-            </div>
+            <ReactionTestGame onBack={() => setActiveMiniGame('dashboard')} />
           ) : activeMiniGame === 'mystery' ? (
-            <div className="miniGamePage">
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:10 }}>
-                <div>
-                  <div className="miniGamePageTitle">Mystery Box</div>
-                  <div className="miniGamePageSub">Coming soon. Daily reward: 0–8 EP.</div>
-                </div>
-                <button className="btn secondary" type="button" onClick={() => setActiveMiniGame('dashboard')}>
-                  Back
-                </button>
-              </div>
-            </div>
+            <MysteryBoxGame onBack={() => setActiveMiniGame('dashboard')} />
           ) : (
             <div className="miniGamesWrap">
               <div className="miniGamesTitle">Mini Games</div>
