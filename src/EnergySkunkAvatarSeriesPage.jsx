@@ -7,16 +7,28 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
 
   const pageRef = useRef(null)
 
-  const scrollToTop = () => {
-    // Some layouts use an internal scroll container (body is fixed). We find the nearest scrollable parent.
-    const start = pageRef.current
-    const isScrollable = (el) => {
-      if (!el) return False
-      const style = window.getComputedStyle(el)
-      const overflowY = style.overflowY
-      const canScroll = (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay")
-      return canScroll && el.scrollHeight > el.clientHeight + 2
-    }
+ const scrollToTop = () => {
+  const scroller =
+    document.querySelector(".appRootScroll") ||
+    document.querySelector(".appScroll") ||
+    document.querySelector(".mainScroll") ||
+    document.scrollingElement ||
+    document.documentElement;
+
+  try {
+    scroller.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (e) {
+    scroller.scrollTop = 0;
+  }
+
+  // fallback
+  try {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  } catch (e) {
+    window.scrollTo(0, 0);
+  }
+};
+
 
     let el = start
     while (el && el !== document.body && el !== document.documentElement) {
