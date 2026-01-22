@@ -5,9 +5,39 @@ import "./energySkunkAvatarSeries.css"
 export default function EnergySkunkAvatarSeriesPage({ onBack }) {
   const [selectedSeries, setSelectedSeries] = useState("all")
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
+  const scrollToTop = (e) => {
+    // Robust scroll-to-top for cases where the app scrolls inside a container (mobile/PWA)
+    const smooth = { top: 0, behavior: "smooth" }
+
+    // 1) Standard window scroll
+    try { window.scrollTo(smooth) } catch (_) {}
+
+    // 2) Document scrolling element (most reliable)
+    try {
+      const se = document.scrollingElement || document.documentElement
+      if (se) se.scrollTo(smooth)
+    } catch (_) {}
+
+    // 3) Fallbacks
+    try { document.documentElement.scrollTop = 0 } catch (_) {}
+    try { document.body.scrollTop = 0 } catch (_) {}
+
+    // 4) If the page uses an internal scroll container, scroll the nearest one
+    try {
+      const start = e && e.currentTarget ? e.currentTarget : null
+      let node = start ? start.parentElement : null
+      while (node) {
+        const style = window.getComputedStyle(node)
+        const oy = style.overflowY
+        if ((oy === "auto" || oy === "scroll") && node.scrollHeight > node.clientHeight) {
+          node.scrollTo(smooth)
+          break
+        }
+        node = node.parentElement
+      }
+    } catch (_) {}
   }
+
 
   const items = useMemo(() => {
     if (selectedSeries === "all") return ENERGY_AVATAR_SERIES
