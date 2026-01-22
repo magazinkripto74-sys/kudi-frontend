@@ -1,112 +1,128 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react'
 
-const LS_BEST = "kudi_reaction_best_ms";
-
-export default function ReactionTestGame({ onBack }) {
-  const [phase, setPhase] = useState("idle"); // idle | waiting | now | done | false
-  const [message, setMessage] = useState("Press Start");
-  const [ms, setMs] = useState(null);
-  const [best, setBest] = useState(() => Number(localStorage.getItem(LS_BEST) || "0") || 0);
-
-  const timerRef = useRef(null);
-  const startAtRef = useRef(0);
+export default function ReactionTestGame() {
+  const [phase, setPhase] = useState('idle') // idle | waiting | now | tooSoon | result
+  const [ms, setMs] = useState(null)
+  const [howToOpen, setHowToOpen] = useState(false)
+  const timeoutRef = useRef(null)
+  const startTsRef = useRef(0)
+  const bestRef = useRef(Number(localStorage.getItem('kudi_react_best') || 99999))
+  const [best, setBest] = useState(bestRef.current === 99999 ? null : bestRef.current)
 
   useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  const reset = () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = null;
-    setPhase("idle");
-    setMessage("Press Start");
-    setMs(null);
-  };
-
-  const start = () => {
-    reset();
-    setPhase("waiting");
-    setMessage("WAIT...");
-    const delay = 800 + Math.random() * 2600; // 0.8s - 3.4s
-    timerRef.current = setTimeout(() => {
-      startAtRef.current = performance.now();
-      setPhase("now");
-      setMessage("NOW!");
-    }, delay);
-  };
-
-  const click = () => {
-    if (phase === "waiting") {
-      // false start
-      setPhase("false");
-      setMessage("Too early ❌");
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = null;
-      return;
+    if (!howToOpen) return
+    const onKeyDownHowTo = (e) => {
+      if (e.key === 'Escape') setHowToOpen(false)
     }
-    if (phase === "now") {
-      const t = performance.now() - startAtRef.current;
-      setMs(Math.round(t));
-      setPhase("done");
-      setMessage("Nice ✅");
+    window.addEventListener('keydown', onKeyDownHowTo)
+    return () => window.removeEventListener('keydown', onKeyDownHowTo)
+  }, [howToOpen])
 
-      const next = best === 0 ? t : Math.min(best, t);
-      setBest(next);
-      localStorage.setItem(LS_BEST, String(Math.round(next)));
-      return;
+
+
+  useEffect(() => () => clearTimeout(timeoutRef.current), [])
+
+  function start() {
+    clearTimeout(timeoutRef.current)
+    setMs(null)
+    setPhase('waiting')
+    const delay = 1000 + Math.random() * 2500
+    timeoutRef.current = setTimeout(() => {
+      startTsRef.current = performance.now()
+      setPhase('now')
+    }, delay)
+  }
+
+  function click() {
+    if (phase === 'waiting') {
+      clearTimeout(timeoutRef.current)
+      setPhase('tooSoon')
+      return
     }
-    if (phase === "done" || phase === "false") {
-      start();
+    if (phase === 'now') {
+      const delta = Math.max(0, Math.round(performance.now() - startTsRef.current))
+      setMs(delta)
+      setPhase('result')
+      if (delta < bestRef.current) {
+        bestRef.current = delta
+        setBest(delta)
+        localStorage.setItem('kudi_react_best', String(delta))
+      }
     }
-  };
+  }
+
+  function reset() {
+    setPhase('idle')
+    setMs(null)
+  }
 
   return (
-    <div className="miniGamePage">
-      <div className="miniGameHeader">
+    <div className="kudiGameCard">
+      <div className="kudiGameRow">
         <div>
-          <div className="miniGamePageTitle">Reaction Test</div>
-          <div className="miniGamePageSub">Wait for NOW, then tap fast. (Front-only)</div>
+          <div className="kudiGameLabel">Best</div>
+          <div className="kudiGameValue">{best ? `${best} ms` : '—'}</div>
         </div>
-        <button className="btn secondary" type="button" onClick={onBack}>
-          Back
-        </button>
-      </div>
-
-      <div className="gameCard">
-        <button className={`reactionPad ${phase}`} type="button" onClick={click}>
-          <div className="reactionMsg">{message}</div>
-          <div className="reactionMs">{ms != null ? `${ms} ms` : ""}</div>
-          <div className="reactionHint">
-            {phase === "idle" ? "Tap to Start" : phase === "waiting" ? "Don't tap yet" : phase === "now" ? "TAP!" : "Tap to retry"}
-          </div>
-        </button>
-
-        <div className="gameRow">
-          <div className="gameStat">
-            <div className="gameStatLabel">Best</div>
-            <div className="gameStatValue">{best ? `${Math.round(best)} ms` : "—"}</div>
-          </div>
-          <div className="gameStat">
-            <div className="gameStatLabel">Last</div>
-            <div className="gameStatValue">{ms != null ? `${ms} ms` : "—"}</div>
-          </div>
-          <div className="gameStat">
-            <div className="gameStatLabel">Tip</div>
-            <div className="gameStatValue">Try under 250ms</div>
-          </div>
-        </div>
-
-        <div className="gameActions">
+        <div className="kudiGameActions">
+          <button className="btn ghost" type="button" onClick={() => setHowToOpen(true)} title="How to Play">How to Play</button>
           <button className="btn primary" type="button" onClick={start}>
             Start
           </button>
-          <button className="btn ghost" type="button" onClick={reset}>
+          <button className="btn secondary" type="button" onClick={reset}>
             Reset
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        className={`kudiReactionPad phase-${phase}`}
+        onClick={click}
+        title="Tap here"
+      >
+        {phase === 'idle' && 'Press START'}
+        {phase === 'waiting' && 'WAIT...'}
+        {phase === 'now' && 'NOW! TAP!'}
+        {phase === 'tooSoon' && 'TOO SOON — press START'}
+        {phase === 'result' && `Your time: ${ms} ms (press START)`}
+      </button>
+
+      <div className="kudiGameHint">
+        Simple reaction test. Later: backend save + daily reward.
+      </div>
+      {howToOpen && (
+        <div className="reactionHowToOverlay" role="dialog" aria-modal="true">
+          <button className="reactionHowToBackdrop" type="button" onClick={() => setHowToOpen(false)} aria-label="Close overlay" />
+          <div className="reactionHowToModal">
+            <div className="reactionHowToHeader">
+              <div className="reactionHowToTitle">How to Play — Reaction Test</div>
+              <button className="reactionHowToClose" type="button" onClick={() => setHowToOpen(false)} aria-label="Close">×</button>
+            </div>
+
+            <div className="reactionHowToBody">
+              <p><b>Goal:</b> Get the fastest reaction time (in milliseconds).</p>
+              <ol>
+                <li>Press <b>Start</b> to begin.</li>
+                <li>The screen will show <b>WAIT…</b> for a random time.</li>
+                <li>When it changes to <b>TAP!</b>, click/tap as fast as you can.</li>
+                <li>If you tap too early, it counts as <b>Too Soon</b>. Try again.</li>
+              </ol>
+              <p style={{ opacity: 0.85 }}>
+                Your best time is saved locally on this device.
+              </p>
+              <p style={{ opacity: 0.85 }}>
+                <b>Note:</b> Reward is shown as 5 EP (coming soon). Real EP + daily limits will be connected later.
+              </p>
+            </div>
+
+            <div className="reactionHowToFooter">
+              <button className="btn primary" type="button" onClick={() => setHowToOpen(false)}>Got it</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
     </div>
-  );
+  )
 }

@@ -449,3 +449,277 @@
   position: relative;
   z-index: 2;
 }
+
+
+/* =========================
+   SLOT — HOW TO PLAY (glass modal)
+   ========================= */
+.slotBottomRow{
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.slotHowtoButton{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(180, 140, 255, 0.35);
+  background: rgba(20, 18, 32, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(240,240,255,0.92);
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 0 rgba(164, 120, 255, 0.0);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.slotHowtoButton:hover{
+  transform: translateY(-1px);
+  border-color: rgba(200, 160, 255, 0.6);
+  box-shadow: 0 0 26px rgba(160, 110, 255, 0.25);
+  background: rgba(26, 22, 44, 0.62);
+}
+
+.slotHowtoIcon{
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 140, 255, 0.5);
+  background: rgba(120, 70, 220, 0.16);
+  box-shadow: 0 0 18px rgba(140, 90, 255, 0.18);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.slotHowtoText{
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+.slotHowtoOverlay{
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.slotHowtoModal{
+  width: min(560px, 100%);
+  border-radius: 18px;
+  border: 1px solid rgba(180, 140, 255, 0.35);
+  background: rgba(16, 14, 26, 0.72);
+  box-shadow: 0 22px 70px rgba(0,0,0,0.55), 0 0 40px rgba(140, 90, 255, 0.18);
+  position: relative;
+  overflow: hidden;
+  animation: slotHowtoPop .18s ease-out;
+}
+
+.slotHowtoModal::before{
+  content: "";
+  position: absolute;
+  inset: -2px;
+  background: radial-gradient(circle at 20% 10%, rgba(170,120,255,0.35), transparent 55%),
+              radial-gradient(circle at 80% 0%, rgba(90,200,255,0.22), transparent 60%),
+              radial-gradient(circle at 60% 90%, rgba(255,120,220,0.18), transparent 55%);
+  pointer-events: none;
+  filter: blur(10px);
+  opacity: 0.9;
+}
+
+@keyframes slotHowtoPop{
+  from{ transform: translateY(10px) scale(0.98); opacity: 0; }
+  to{ transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.slotHowtoHeader{
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 14px 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.slotHowtoTitle{
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: rgba(245,245,255,0.95);
+}
+
+.slotHowtoClose{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(180, 140, 255, 0.28);
+  background: rgba(10, 10, 18, 0.55);
+  color: rgba(255,255,255,0.92);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.slotHowtoClose:hover{
+  border-color: rgba(200, 160, 255, 0.6);
+  box-shadow: 0 0 20px rgba(140, 90, 255, 0.22);
+}
+
+.slotHowtoBody{
+  position: relative;
+  z-index: 1;
+  padding: 14px 16px 16px 16px;
+  color: rgba(235,235,255,0.9);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.slotHowtoLead{
+  margin-bottom: 10px;
+  color: rgba(245,245,255,0.95);
+}
+
+.slotHowtoList{
+  margin: 0 0 10px 18px;
+  padding: 0;
+}
+
+.slotHowtoList li{
+  margin: 6px 0;
+}
+
+.slotHowtoNote{
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255,255,255,0.12);
+  color: rgba(220,220,255,0.82);
+}
+
+@media (max-width: 520px){
+  .slotHowtoText{ display: none; }
+  .slotHowtoButton{ padding: 10px 12px; }
+}
+
+
+/* =========================================================
+   KUDI-SLOT-UI-HIERARCHY-NEON
+   - SPIN is the primary centered CTA
+   - How to Play is docked/attached to SPIN
+   ========================================================= */
+
+.slotBottomRow{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding: 14px 14px 18px;
+  overflow: visible;
+}
+
+/* Center cluster (relative so dock can attach) */
+.slotActionsCenter{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+/* Primary SPIN (bigger + breathing neon) */
+.slotSpinButton.slotSpinPrimary{
+  min-width: 220px;
+  height: 56px;
+  padding: 0 28px;
+  border-radius: 18px;
+  letter-spacing: 1.4px;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.48);
+}
+
+/* Breathing effect (do not animate when disabled) */
+.slotSpinButton.slotSpinPrimary:not(:disabled){
+  animation: slotSpinBreathe 2.6s ease-in-out infinite;
+}
+
+.slotSpinButton.slotSpinPrimary:hover{
+  animation-play-state: paused;
+}
+
+/* Keep active press feel */
+.slotSpinButton.slotSpinPrimary:active{
+  animation-play-state: paused;
+}
+
+@keyframes slotSpinBreathe{
+  0%, 100%{ transform: translateY(0) scale(1); filter: brightness(1.00); }
+  50%{ transform: translateY(-1px) scale(1.03); filter: brightness(1.08); }
+}
+
+/* Docked "How to Play" pill attached to SPIN */
+.slotHowtoDock{
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translate(-112%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(180, 140, 255, 0.30);
+  background: rgba(16, 14, 26, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(240,240,255,0.92);
+  font-weight: 750;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(160, 110, 255, 0.16);
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  white-space: nowrap;
+}
+
+.slotHowtoDock:hover{
+  transform: translate(-112%, -52%);
+  border-color: rgba(200, 160, 255, 0.55);
+  box-shadow: 0 0 30px rgba(160, 110, 255, 0.24);
+  background: rgba(22, 18, 36, 0.62);
+}
+
+.slotHowtoDock:active{
+  transform: translate(-112%, -50%) scale(0.99);
+}
+
+.slotHowtoDockIcon{
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(180, 140, 255, 0.46);
+  background: rgba(120, 70, 220, 0.14);
+  box-shadow: 0 0 18px rgba(140, 90, 255, 0.16);
+  font-size: 14px;
+  line-height: 1;
+}
+
+.slotHowtoDockText{
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+/* On very small screens, keep it clean (icon-only) */
+@media (max-width: 520px){
+  .slotHowtoDockText{ display: none; }
+  .slotHowtoDock{ padding: 10px 12px; }
+  .slotHowtoDock{ transform: translate(-105%, -50%); }
+  .slotSpinButton.slotSpinPrimary{ min-width: 190px; height: 52px; }
+}

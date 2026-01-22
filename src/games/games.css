@@ -1,127 +1,518 @@
-/* Mini Games (front-only demos) */
-
-.miniGameHeader{
+/* Minimal styles scoped to games UI */
+.kudiGameCard{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  padding:14px;
+  background: rgba(10,10,20,.25);
+  backdrop-filter: blur(8px);
+}
+.kudiGameRow{
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  gap:10px;
-  margin-bottom:10px;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
 }
-
-.gameCard{
-  border:1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.28);
-  border-radius:18px;
-  padding:14px;
+.kudiGameLabel{
+  opacity:.75;
+  font-size:12px;
 }
-
-.gameRow{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-  margin-top:12px;
+.kudiGameValue{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.2px;
 }
-
-@media (max-width:520px){
-  .gameRow{ grid-template-columns:repeat(2,minmax(0,1fr)); }
-}
-
-.gameStat{
-  border:1px solid rgba(255,255,255,0.10);
-  background: rgba(11,11,18,0.35);
-  border-radius:14px;
-  padding:10px;
-}
-
-.gameStatLabel{ font-size:12px; opacity:.75; }
-.gameStatValue{ margin-top:4px; font-weight:900; font-size:14px; }
-
-.gameActions{
+.kudiGameActions{
   display:flex;
   gap:10px;
-  margin-top:14px;
+  flex-wrap:wrap;
 }
-
-.gameActions .btn{ flex:1; }
-
-/* Crash */
-.crashScreen{
-  border-radius:16px;
-  padding:18px;
-  text-align:center;
-  border:1px solid rgba(255,255,255,0.10);
-  background: rgba(11,11,18,0.35);
+.kudiGameHint{
+  margin-top:10px;
+  opacity:.75;
+  font-size:12px;
 }
-.crashMult{ font-weight:1000; font-size:34px; letter-spacing:.4px; }
-.crashStatus{ margin-top:6px; opacity:.85; font-size:12px; }
-.crashScreen.isRunning{ box-shadow: 0 0 0 1px rgba(139,92,246,0.25), 0 12px 30px rgba(139,92,246,0.12); }
-.crashScreen.isCrashed{ box-shadow: 0 0 0 1px rgba(255,92,92,0.25), 0 12px 30px rgba(255,92,92,0.10); }
-
-/* Target Tap */
-.targetArea{
+.kudiGameResult{
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  border:1px dashed rgba(255,255,255,.18);
+  background: rgba(0,0,0,.18);
+  font-size:13px;
+}
+.kudiTargetBoard{
   position:relative;
+  margin-top:12px;
   height:260px;
   border-radius:16px;
-  border:1px dashed rgba(255,255,255,0.18);
-  background: rgba(11,11,18,0.25);
-  margin-top:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
   overflow:hidden;
-  user-select:none;
-  touch-action:manipulation;
 }
-@media (max-width:520px){
-  .targetArea{ height:220px; }
-}
-.targetDot{
+.kudiTargetDot{
   position:absolute;
-  width:56px;
-  height:56px;
+  width:54px;
+  height:54px;
+  transform: translate(-50%, -50%);
   border-radius:999px;
-  border:1px solid rgba(255,255,255,0.18);
-  background: rgba(56,255,215,0.28);
-  box-shadow: 0 8px 22px rgba(56,255,215,0.12);
+  border:1px solid rgba(255,255,255,.35);
+  background: rgba(255,255,255,.10);
+  box-shadow: 0 0 24px rgba(139,92,246,.22);
 }
-.targetDot.isIdle{ opacity:0.35; pointer-events:none; }
-.targetOverlay{
+.kudiTargetDot:disabled{ opacity:.35; }
+.kudiReactionPad{
+  width:100%;
+  margin-top:12px;
+  padding:18px 14px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.22);
+  font-weight:800;
+  letter-spacing:.4px;
+}
+.kudiReactionPad.phase-now{
+  background: rgba(34,197,94,.18);
+  border-color: rgba(34,197,94,.35);
+}
+.kudiReactionPad.phase-tooSoon{
+  background: rgba(239,68,68,.14);
+  border-color: rgba(239,68,68,.30);
+}
+.kudiMysteryBox{
+  width:160px;
+  height:140px;
+  margin:16px auto 0;
+  position:relative;
+  filter: drop-shadow(0 12px 18px rgba(0,0,0,.25));
+}
+.kudiMysteryBody{
   position:absolute;
-  inset:0;
+  inset:30px 0 0 0;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.08);
+}
+.kudiMysteryLid{
+  position:absolute;
+  inset:0 0 auto 0;
+  height:46px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(255,255,255,.10);
+}
+.miniGameBadge{ pointer-events:none; }
+
+/* Make disabled action buttons visibly disabled */
+.kudiGameActions .btn:disabled{
+  opacity: .45;
+  cursor: not-allowed;
+  filter: saturate(.7);
+}
+
+
+/* Mystery Box — How to Play modal (scoped) */
+.mysteryHowToOverlay{
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+}
+
+.mysteryHowToBackdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.68);
+  border: none;
+  pointer-events: auto;
+  z-index: 0;
+}
+
+.mysteryHowToModal{
+  position: relative;
+  z-index: 1;
+  width: min(620px, calc(100vw - 24px));
+  max-height: min(72vh, 560px);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(12,12,18,.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 22px 60px rgba(0,0,0,.62), 0 0 32px rgba(138, 90, 255, .18);
+}
+
+.mysteryHowToHeader{
   display:flex;
-  flex-direction:column;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.mysteryHowToTitle{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.mysteryHowToClose{
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  cursor: pointer;
+  line-height: 1;
+  display:flex;
   align-items:center;
   justify-content:center;
-  gap:6px;
-  opacity:.85;
 }
-.targetOverlayTitle{ font-weight:1000; font-size:18px; }
-.targetOverlaySub{ font-size:12px; opacity:.85; }
 
-/* Reaction */
-.reactionPad{
-  width:100%;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,0.10);
-  padding:18px;
-  background: rgba(11,11,18,0.35);
-  text-align:center;
-  cursor:pointer;
-  user-select:none;
-  touch-action:manipulation;
+.mysteryHowToClose:hover{
+  background: rgba(255,255,255,.10);
 }
-.reactionPad.waiting{ box-shadow: 0 0 0 1px rgba(255,255,255,0.08); }
-.reactionPad.now{ box-shadow: 0 0 0 1px rgba(56,255,215,0.22), 0 18px 40px rgba(56,255,215,0.10); }
-.reactionPad.false{ box-shadow: 0 0 0 1px rgba(255,92,92,0.22), 0 18px 40px rgba(255,92,92,0.10); }
-.reactionMsg{ font-weight:1000; font-size:22px; }
-.reactionMs{ margin-top:8px; font-weight:1000; font-size:28px; }
-.reactionHint{ margin-top:8px; font-size:12px; opacity:.8; }
 
-/* Mystery Box */
-.mysteryBox{
-  border-radius:16px;
-  padding:18px;
-  text-align:center;
-  border:1px solid rgba(255,255,255,0.10);
-  background: rgba(11,11,18,0.35);
+.mysteryHowToBody{
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255,255,255,.92);
+  max-height: calc(min(72vh, 560px) - 112px);
+  overflow: auto;
 }
-.mysteryTitle{ font-weight:1000; letter-spacing:.8px; font-size:14px; opacity:.85; }
-.mysteryReward{ margin-top:10px; font-size:16px; }
-.mysterySub{ margin-top:8px; font-size:12px; opacity:.75; }
+
+.mysteryHowToBody p{
+  margin: 0 0 10px;
+}
+
+.mysteryHowToBody ol{
+  margin: 8px 0 10px 18px;
+  padding: 0;
+}
+
+.mysteryHowToFooter{
+  padding: 12px 16px 14px;
+  display:flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+
+/* Mystery Box — simple confetti + reward pop (no external libs) */
+.kudiRewardFx{
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.kudiRewardText{
+  font-weight: 1000;
+  font-size: 42px;
+  letter-spacing: .5px;
+  color: rgba(255,255,255,.96);
+  text-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 22px rgba(138, 90, 255, .35);
+  transform: translateY(4px) scale(.92);
+  animation: kudiRewardPop 1.6s ease-out forwards;
+}
+
+@keyframes kudiRewardPop{
+  0%{ opacity: 0; transform: translateY(14px) scale(.86); filter: blur(2px); }
+  16%{ opacity: 1; transform: translateY(0px) scale(1.0); filter: blur(0px); }
+  60%{ opacity: 1; transform: translateY(-6px) scale(1.02); }
+  100%{ opacity: 0; transform: translateY(-14px) scale(.98); }
+}
+
+.kudiConfettiBurst{
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.kudiConfettiPiece{
+  position: absolute;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.9);
+  box-shadow: 0 0 18px rgba(138, 90, 255, .22);
+  animation: kudiConfettiFall 1.35s ease-in forwards;
+}
+
+.kudiConfettiPiece:nth-child(3n){
+  width: 8px;
+  height: 12px;
+}
+.kudiConfettiPiece:nth-child(4n){
+  width: 10px;
+  height: 16px;
+}
+
+@keyframes kudiConfettiFall{
+  0%{ opacity: 0; transform: translateY(0) rotate(0deg); }
+  10%{ opacity: 1; }
+  100%{ opacity: 0; transform: translateY(340px) rotate(520deg); }
+}
+
+/* Ensure game center can host absolute FX layers safely */
+.kudiGameCenter{
+  position: relative;
+}
+
+
+/* Mystery Box — prod-like simple one-button layout */
+.mysteryProdHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom: 12px;
+}
+
+.mysteryProdTitle{
+  font-weight: 900;
+  letter-spacing: .2px;
+  opacity: .95;
+}
+
+.mysteryProdSub{
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: .70;
+}
+
+.mysteryProdPanel{
+  position: relative;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.03);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  padding: 16px 14px;
+  text-align: center;
+}
+
+.mysteryProdPanelTitle{
+  font-weight: 1000;
+  letter-spacing: 1px;
+  opacity: .90;
+}
+
+.mysteryProdPanelText{
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: .88;
+}
+
+.mysteryProdActions{
+  margin-top: 12px;
+  display:flex;
+  justify-content:center;
+}
+
+.mysteryProdOpenBtn{
+  width: min(560px, 100%);
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   KUDI Mini-Games — Vegas Casino Skin (A)
+   Safe: scoped to .kudiGame* + mysteryProd*
+   ───────────────────────────────────────────────────────────── */
+
+:root{
+  --kudi-casino-purple: rgba(140, 90, 255, 1);
+  --kudi-casino-purple2: rgba(190, 155, 255, 1);
+  --kudi-casino-gold: rgba(255, 210, 120, 1);
+  --kudi-casino-cyan: rgba(0, 220, 255, 1);
+}
+
+@keyframes kudiCasinoBreath{
+  0%   { box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 18px rgba(140,90,255,.14), 0 0 0 rgba(0,0,0,0); }
+  50%  { box-shadow: 0 22px 62px rgba(0,0,0,.62), 0 0 28px rgba(140,90,255,.26), 0 0 18px rgba(0,220,255,.10); }
+  100% { box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 18px rgba(140,90,255,.14), 0 0 0 rgba(0,0,0,0); }
+}
+
+@keyframes kudiCasinoSheen{
+  0%   { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+  12%  { opacity: .18; }
+  45%  { opacity: .08; }
+  100% { transform: translateX(220%) skewX(-18deg); opacity: 0; }
+}
+
+@keyframes kudiCasinoScanlines{
+  0%{ background-position: 0 0; opacity: .08; }
+  50%{ opacity: .12; }
+  100%{ background-position: 0 220px; opacity: .08; }
+}
+
+/* CARD: premium glass + neon frame */
+.kudiGameCard{
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  background: rgba(12, 10, 18, .55) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  animation: kudiCasinoBreath 4.6s ease-in-out infinite;
+}
+
+/* gradient neon frame */
+.kudiGameCard::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,.10),
+    rgba(140,90,255,.30),
+    rgba(255,210,120,.18),
+    rgba(0,220,255,.14),
+    rgba(255,255,255,.08)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events:none;
+  opacity:.95;
+}
+
+/* glass sheen sweep */
+.kudiGameCard::after{
+  content:"";
+  position:absolute;
+  top:-40%;
+  left:-70%;
+  width: 55%;
+  height: 200%;
+  pointer-events:none;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.14), rgba(255,255,255,0));
+  opacity:0;
+  animation: kudiCasinoSheen 8.0s ease-in-out infinite;
+}
+
+/* HUD row */
+.kudiGameRow{
+  padding: 10px 10px 12px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  background: rgba(0,0,0,.18) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+
+/* labels + values */
+.kudiGameLabel{
+  opacity: .78 !important;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+.kudiGameValue{
+  font-size: 26px !important;
+  font-weight: 1000 !important;
+  letter-spacing: .4px !important;
+  text-shadow: 0 10px 30px rgba(0,0,0,.55), 0 0 22px rgba(140,90,255,.22);
+}
+
+/* arena panel */
+.kudiGameCenter{
+  position: relative;
+  margin-top: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(1200px 500px at 20% 10%, rgba(140,90,255,.18), rgba(0,0,0,0) 55%),
+    radial-gradient(900px 420px at 80% 40%, rgba(0,220,255,.10), rgba(0,0,0,0) 55%),
+    rgba(0,0,0,.16);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  overflow: hidden;
+}
+
+/* subtle scanlines (makes it feel like a game screen) */
+.kudiGameCenter::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.0) 0px,
+    rgba(255,255,255,.0) 6px,
+    rgba(255,255,255,.06) 7px
+  );
+  opacity:.10;
+  animation: kudiCasinoScanlines 7.5s linear infinite;
+}
+
+/* actions */
+.kudiGameActions{
+  gap: 10px !important;
+}
+
+/* buttons inside games: glossy + neon */
+.kudiGameCard .btn{
+  border-radius: 999px;
+  transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+}
+
+.kudiGameCard .btn.primary{
+  border: 1px solid rgba(255,255,255,.14);
+  background: linear-gradient(135deg, rgba(140,90,255,.92), rgba(255,210,120,.30)) !important;
+  box-shadow: 0 14px 34px rgba(0,0,0,.55), 0 0 26px rgba(140,90,255,.18);
+}
+
+.kudiGameCard .btn.primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 40px rgba(0,0,0,.60), 0 0 30px rgba(0,220,255,.16), 0 0 28px rgba(140,90,255,.22);
+}
+
+.kudiGameCard .btn.primary:active{
+  transform: translateY(0px) scale(.99);
+}
+
+.kudiGameCard .btn.ghost{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06) !important;
+  box-shadow: 0 10px 24px rgba(0,0,0,.40);
+}
+
+.kudiGameCard .btn.ghost:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(0,0,0,.46), 0 0 18px rgba(140,90,255,.12);
+}
+
+/* make disabled feel intentional */
+.kudiGameCard .btn:disabled{
+  opacity: .46 !important;
+  cursor: not-allowed !important;
+  filter: saturate(.75) brightness(.95) !important;
+  box-shadow: none !important;
+}
+
+/* keep Mystery Box panel matching */
+.mysteryProdPanel{
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.04) !important;
+}
+
+/* mobile tightening */
+@media (max-width: 520px){
+  .kudiGameValue{ font-size: 24px !important; }
+  .kudiGameRow{ padding: 10px !important; }
+}
+
+/* accessibility */
+@media (prefers-reduced-motion: reduce){
+  .kudiGameCard{ animation: none !important; }
+  .kudiGameCard::after,
+  .kudiGameCard::before,
+  .kudiGameCenter::after{ animation: none !important; }
+  .kudiGameCard .btn{ transition: none !important; }
+}

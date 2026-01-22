@@ -1,138 +1,164 @@
-import React, { useEffect, useRef, useState } from "react";
-
-const LS_BEST = "kudi_crash_best_mult";
-
-function formatMult(x) {
-  return `${x.toFixed(2)}x`;
-}
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 /**
- * Front-only Crash (demo)
- * - Start -> multiplier increases
- * - Random crash chance increases with multiplier
- * - Cashout before crash -> score
- * - Stores best cashout in localStorage
+ * Frontend-only demo.
+ * Later we will connect to backend for provably-fair outcomes + daily caps.
  */
-export default function CrashGame({ onBack }) {
-  const [running, setRunning] = useState(false);
-  const [crashed, setCrashed] = useState(false);
-  const [mult, setMult] = useState(1.0);
-  const [cashoutMult, setCashoutMult] = useState(null);
-  const [best, setBest] = useState(() => {
-    const v = Number(localStorage.getItem(LS_BEST) || "0");
-    return Number.isFinite(v) ? v : 0;
-  });
+export default function CrashGame() {
+  const [status, setStatus] = useState('idle') // idle | running | ended
+  const [mult, setMult] = useState(1.0)
+  const [result, setResult] = useState(null)
+  const [howToOpen, setHowToOpen] = useState(false)
 
-  const rafRef = useRef(null);
-  const tickRef = useRef({ last: 0 });
 
   useEffect(() => {
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
+    if (!howToOpen) return
+    const onKeyDownHowTo = (e) => {
+      if (e.key === 'Escape') setHowToOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDownHowTo)
+    return () => window.removeEventListener('keydown', onKeyDownHowTo)
+  }, [howToOpen])
 
-  const reset = () => {
-    setRunning(false);
-    setCrashed(false);
-    setMult(1.0);
-    setCashoutMult(null);
-  };
+  const rafRef = useRef(null)
+  const startTsRef = useRef(0)
+  const crashAtRef = useRef(0)
 
-  const start = () => {
-    reset();
-    setRunning(true);
-    tickRef.current.last = performance.now();
+  const last = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('kudi_crash_last') || 'null') } catch { return null }
+  }, [])
 
-    const loop = (t) => {
-      if (!tickRef.current.last) tickRef.current.last = t;
-      const dt = Math.min(0.05, (t - tickRef.current.last) / 1000);
-      tickRef.current.last = t;
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), [])
 
-      // growth curve: faster early, slower later
-      setMult((prev) => {
-        const next = prev + (0.55 + prev * 0.18) * dt;
-        return Math.min(next, 50);
-      });
+  function tick(ts) {
+    if (!startTsRef.current) startTsRef.current = ts
+    const t = (ts - startTsRef.current) / 1000
+    // smooth-ish growth: 1.0 -> ~3.0 in ~10s
+    const next = Math.max(1, 1 + t * 0.22 + (t * t) * 0.02)
+    if (next >= crashAtRef.current) {
+      setMult(crashAtRef.current)
+      end('crash')
+      return
+    }
+    setMult(next)
+    rafRef.current = requestAnimationFrame(tick)
+  }
 
-      // crash probability increases with multiplier
-      // (lightweight, not "rigged" - just a demo)
-      const p = Math.min(0.35, 0.005 + Math.max(0, mult - 1) * 0.012);
-      if (Math.random() < p * dt * 10) {
-        // crash
-        setRunning(false);
-        setCrashed(true);
-        rafRef.current = null;
-        return;
-      }
+  function start() {
+    if (status === 'running') return
+    setResult(null)
+    setMult(1.0)
+    setStatus('running')
+    startTsRef.current = 0
+    // crash point 1.2 - 6.0 (biased low)
+    const r = Math.random()
+    const crashAt = 1.2 + Math.pow(r, 0.65) * 4.8
+    crashAtRef.current = Number(crashAt.toFixed(2))
+    rafRef.current = requestAnimationFrame(tick)
+  }
 
-      rafRef.current = requestAnimationFrame(loop);
-    };
+  function end(type) {
+    cancelAnimationFrame(rafRef.current)
+    setStatus('ended')
+    const payload = {
+      endedAt: Date.now(),
+      crashAt: crashAtRef.current,
+      final: Number(mult.toFixed(2)),
+      type,
+    }
+    localStorage.setItem('kudi_crash_last', JSON.stringify(payload))
+    setResult(payload)
+  }
 
-    rafRef.current = requestAnimationFrame(loop);
-  };
-
-  const cashout = () => {
-    if (!running) return;
-    setRunning(false);
-    setCashoutMult(mult);
-    setCrashed(false);
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
-
-    const nextBest = Math.max(best, mult);
-    setBest(nextBest);
-    localStorage.setItem(LS_BEST, String(nextBest.toFixed(4)));
-  };
+  function cashOut() {
+    if (status !== 'running') return
+    end('cashout')
+  }
 
   return (
-    <div className="miniGamePage">
-      <div className="miniGameHeader">
+    <div className="kudiGameCard">
+      <div className="kudiGameRow">
         <div>
-          <div className="miniGamePageTitle">Crash</div>
-          <div className="miniGamePageSub">
-            Demo (front-only). Cash out before crash. (Backend EP later)
-          </div>
+          <div className="kudiGameLabel">Multiplier</div>
+          <div className="kudiGameValue">{mult.toFixed(2)}x</div>
         </div>
-        <button className="btn secondary" type="button" onClick={onBack}>
-          Back
-        </button>
-      </div>
-
-      <div className="gameCard">
-        <div className={`crashScreen ${running ? "isRunning" : ""} ${crashed ? "isCrashed" : ""}`}>
-          <div className="crashMult">{formatMult(mult)}</div>
-          <div className="crashStatus">
-            {running ? "RUNNING..." : crashed ? "CRASHED 💥" : cashoutMult ? `CASHED OUT ✅ (${formatMult(cashoutMult)})` : "READY"}
-          </div>
-        </div>
-
-        <div className="gameRow">
-          <div className="gameStat">
-            <div className="gameStatLabel">Best</div>
-            <div className="gameStatValue">{best > 0 ? formatMult(best) : "—"}</div>
-          </div>
-          <div className="gameStat">
-            <div className="gameStatLabel">Tip</div>
-            <div className="gameStatValue">Early cashout is safer</div>
-          </div>
-        </div>
-
-        <div className="gameActions">
-          {!running ? (
-            <button className="btn primary" type="button" onClick={start}>
-              Start
+        <div className="kudiGameActions">
+          <button
+              className="btn ghost"
+              type="button"
+              onClick={() => setHowToOpen(true)}
+              title="How to Play"
+            >
+              How to Play
             </button>
-          ) : (
-            <button className="btn primary" type="button" onClick={cashout}>
-              Cash Out
-            </button>
-          )}
-          <button className="btn ghost" type="button" onClick={reset}>
-            Reset
+            <button className="btn primary" type="button" onClick={start} disabled={status === 'running'}>
+            Start
+          </button>
+          <button className="btn secondary" type="button" onClick={cashOut} disabled={status !== 'running'}>
+            Cash Out
           </button>
         </div>
       </div>
+
+      <div className="kudiGameHint">
+        Demo logic only. Later: backend caps (max 10 EP/day), anti-spam, provably fair.
+      </div>
+
+      {result && (
+        <div className="kudiGameResult">
+          <div><b>Result:</b> {result.type === 'cashout' ? 'CASH OUT' : 'CRASH'}</div>
+          <div><b>Crash at:</b> {result.crashAt}x</div>
+          <div><b>Final:</b> {result.final}x</div>
+        </div>
+      )}
+
+      {last && !result && (
+        <div className="kudiGameResult">
+          <div><b>Last run:</b> {new Date(last.endedAt).toLocaleString()}</div>
+          <div><b>Type:</b> {last.type}</div>
+          <div><b>Crash:</b> {last.crashAt}x</div>
+        </div>
+      )}
+      {howToOpen && (
+        <div className="crashHowToOverlay" role="dialog" aria-modal="true">
+          <div className="crashHowToModal">
+            <div className="crashHowToHeader">
+              <div className="crashHowToTitle">How to Play — Crash</div>
+              <button className="crashHowToClose" type="button" onClick={() => setHowToOpen(false)} aria-label="Close">
+                ×
+              </button>
+            </div>
+
+            <div className="crashHowToBody">
+              <p>
+                <b>Goal:</b> Start the round and cash out before the multiplier crashes.
+              </p>
+              <ol>
+                <li>Press <b>Start</b> to begin the round.</li>
+                <li>The multiplier will increase from <b>1.00×</b> upward.</li>
+                <li>Press <b>Cash Out</b> at any time to lock your result.</li>
+                <li>If the round crashes before you cash out, you get <b>0</b> for that round.</li>
+              </ol>
+              <p style={{ opacity: 0.85 }}>
+                <b>Note:</b> This is a demo UI now. Later we’ll connect it to the backend with daily caps and anti-spam rules.
+              </p>
+              <p style={{ opacity: 0.85 }}>
+                <b>Tip:</b> Small cash-outs are safer; waiting longer is riskier but can pay more.
+              </p>
+            </div>
+
+            <div className="crashHowToFooter">
+              <button className="btn primary" type="button" onClick={() => setHowToOpen(false)}>
+                Got it
+              </button>
+            </div>
+          </div>
+
+          <button className="crashHowToBackdrop" type="button" onClick={() => setHowToOpen(false)} aria-label="Close overlay" />
+        </div>
+      )}
+
+
     </div>
-  );
+  )
 }

@@ -1,127 +1,129 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react'
 
-const LS_BEST = "kudi_target_best";
-
-function clamp(v, a, b) {
-  return Math.max(a, Math.min(b, v));
-}
-
-export default function TargetTapGame({ onBack }) {
-  const areaRef = useRef(null);
-  const [running, setRunning] = useState(false);
-  const [timeLeftMs, setTimeLeftMs] = useState(10_000);
-  const [score, setScore] = useState(0);
-  const [pos, setPos] = useState({ x: 40, y: 40 });
-  const [best, setBest] = useState(() => Number(localStorage.getItem(LS_BEST) || "0") || 0);
-
-  const timeLeft = useMemo(() => Math.ceil(timeLeftMs / 1000), [timeLeftMs]);
-
-  const placeTarget = () => {
-    const el = areaRef.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const size = 56; // target size
-    const x = Math.random() * (r.width - size);
-    const y = Math.random() * (r.height - size);
-    setPos({ x: clamp(x, 0, r.width - size), y: clamp(y, 0, r.height - size) });
-  };
+export default function TargetTapGame() {
+  const [running, setRunning] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(10)
+  const [score, setScore] = useState(0)
+  const [best, setBest] = useState(() => Number(localStorage.getItem('kudi_target_best') || 0))
+  const [target, setTarget] = useState({ x: 50, y: 50, id: 0 })
+  const [howToOpen, setHowToOpen] = useState(false)
+  const timerRef = useRef(null)
 
   useEffect(() => {
-    if (!running) return;
-    placeTarget();
-
-    const started = performance.now();
-    const id = setInterval(() => {
-      const elapsed = performance.now() - started;
-      const left = 10_000 - elapsed;
-      setTimeLeftMs(Math.max(0, left));
-      if (left <= 0) {
-        clearInterval(id);
-        setRunning(false);
-      }
-    }, 50);
-
-    return () => clearInterval(id);
-  }, [running]);
-
-  useEffect(() => {
-    if (running) return;
-    // end -> save best
-    if (score > 0) {
-      const next = Math.max(best, score);
-      setBest(next);
-      localStorage.setItem(LS_BEST, String(next));
+    if (!howToOpen) return
+    const onKeyDownHowTo = (e) => {
+      if (e.key === 'Escape') setHowToOpen(false)
     }
-  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
+    window.addEventListener('keydown', onKeyDownHowTo)
+    return () => window.removeEventListener('keydown', onKeyDownHowTo)
+  }, [howToOpen])
 
-  const start = () => {
-    setScore(0);
-    setTimeLeftMs(10_000);
-    setRunning(true);
-  };
 
-  const hit = () => {
-    if (!running) return;
-    setScore((s) => s + 1);
-    placeTarget();
-  };
+
+  useEffect(() => () => clearInterval(timerRef.current), [])
+
+  function randomTarget() {
+    // keep inside safe bounds
+    const x = 10 + Math.random() * 80
+    const y = 10 + Math.random() * 80
+    setTarget((t) => ({ x, y, id: t.id + 1 }))
+  }
+
+  function start() {
+    clearInterval(timerRef.current)
+    setRunning(true)
+    setTimeLeft(10)
+    setScore(0)
+    randomTarget()
+    timerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          clearInterval(timerRef.current)
+          setRunning(false)
+          return 0
+        }
+        return t - 1
+      })
+    }, 1000)
+  }
+
+  function hit() {
+    if (!running) return
+    setScore((s) => s + 1)
+    randomTarget()
+  }
+
+  useEffect(() => {
+    if (!running && timeLeft === 0) {
+      const nextBest = Math.max(best, score)
+      setBest(nextBest)
+      localStorage.setItem('kudi_target_best', String(nextBest))
+    }
+  }, [running, timeLeft, score, best])
 
   return (
-    <div className="miniGamePage">
-      <div className="miniGameHeader">
-        <div>
-          <div className="miniGamePageTitle">Target Tap</div>
-          <div className="miniGamePageSub">10 seconds. Tap as many targets as you can. (Front-only)</div>
+    <div className="kudiGameCard">
+      <div className="kudiGameRow">
+        <div className="kudiGameStats">
+          <div><span className="kudiGameLabel">Time</span> <b>{timeLeft}s</b></div>
+          <div><span className="kudiGameLabel">Score</span> <b>{score}</b></div>
+          <div><span className="kudiGameLabel">Best</span> <b>{best}</b></div>
         </div>
-        <button className="btn secondary" type="button" onClick={onBack}>
-          Back
-        </button>
+        <div className="kudiGameActions">
+          <button className="btn ghost" type="button" onClick={() => setHowToOpen(true)} title="How to Play">How to Play</button>
+          <button className="btn primary" type="button" onClick={start}>
+            {running ? 'Restart' : 'Start'}
+          </button>
+        </div>
       </div>
 
-      <div className="gameCard">
-        <div className="gameRow">
-          <div className="gameStat">
-            <div className="gameStatLabel">Time</div>
-            <div className="gameStatValue">{timeLeft}s</div>
-          </div>
-          <div className="gameStat">
-            <div className="gameStatLabel">Score</div>
-            <div className="gameStatValue">{score}</div>
-          </div>
-          <div className="gameStat">
-            <div className="gameStatLabel">Best</div>
-            <div className="gameStatValue">{best || "—"}</div>
-          </div>
-        </div>
+      <div className="kudiTargetBoard" aria-label="Target board">
+        <button
+          type="button"
+          className="kudiTargetDot"
+          style={{ left: `${target.x}%`, top: `${target.y}%` }}
+          onClick={hit}
+          disabled={!running}
+          title={running ? 'Tap!' : 'Start the game'}
+        />
+      </div>
 
-        <div className="targetArea" ref={areaRef}>
-          <button
-            type="button"
-            className={`targetDot ${running ? "isLive" : "isIdle"}`}
-            style={{ left: pos.x, top: pos.y }}
-            onClick={hit}
-            aria-label="target"
-          />
-          {!running && (
-            <div className="targetOverlay">
-              <div className="targetOverlayTitle">Ready</div>
-              <div className="targetOverlaySub">Press Start</div>
+      <div className="kudiGameHint">
+        Tap as many targets as you can in 10 seconds (mobile-friendly).
+      </div>
+      {howToOpen && (
+        <div className="targetHowToOverlay" role="dialog" aria-modal="true">
+          <button className="targetHowToBackdrop" type="button" onClick={() => setHowToOpen(false)} aria-label="Close overlay" />
+          <div className="targetHowToModal">
+            <div className="targetHowToHeader">
+              <div className="targetHowToTitle">How to Play — Target Tap</div>
+              <button className="targetHowToClose" type="button" onClick={() => setHowToOpen(false)} aria-label="Close">×</button>
             </div>
-          )}
-        </div>
 
-        <div className="gameActions">
-          {!running ? (
-            <button className="btn primary" type="button" onClick={start}>
-              Start
-            </button>
-          ) : (
-            <button className="btn ghost" type="button" onClick={() => setRunning(false)}>
-              Stop
-            </button>
-          )}
+            <div className="targetHowToBody">
+              <p><b>Goal:</b> Tap as many targets as you can before the timer ends.</p>
+              <ol>
+                <li>Press <b>Start</b> (or <b>Restart</b>) to begin a new round (10 seconds).</li>
+                <li>A circle target appears inside the box.</li>
+                <li>Tap the target to score points — each hit spawns a new target.</li>
+                <li>When time reaches <b>0</b>, the round ends and your best score is saved.</li>
+              </ol>
+              <p style={{ opacity: 0.85 }}>
+                <b>Tip:</b> Use quick, short taps. On mobile, keep your finger near the center to react faster.
+              </p>
+              <p style={{ opacity: 0.85 }}>
+                <b>Note:</b> Reward is shown as 5 EP (coming soon). We’ll connect real EP & daily limits later.
+              </p>
+            </div>
+
+            <div className="targetHowToFooter">
+              <button className="btn primary" type="button" onClick={() => setHowToOpen(false)}>Got it</button>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+
     </div>
-  );
+  )
 }

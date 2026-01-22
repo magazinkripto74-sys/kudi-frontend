@@ -193,6 +193,7 @@ export default function SlotMachine({
   const [winToast, setWinToast] = useState(null)
   const [confettiSeed, setConfettiSeed] = useState(0)
   const [canSpin, setCanSpin] = useState(true)
+  const [howToOpen, setHowToOpen] = useState(false)
   const [nextResetUtc, setNextResetUtc] = useState('')
 
   const API_BASE = getApiBase()
@@ -204,8 +205,8 @@ export default function SlotMachine({
   useEffect(() => {
     const run = async () => {
       if (!API_BASE || !token) {
-        // Don't show DONE when user is not authenticated
-        setCanSpin(false)
+        // Not authenticated: keep canSpin true (UI will show CONNECT)
+        setCanSpin(true)
         return
       }
       try {
@@ -218,18 +219,35 @@ export default function SlotMachine({
         })
         const j = await r.json()
         if (j && j.ok) {
-          setCanSpin(!!j.canSpin)
+          // Backend may incorrectly flip canSpin=false after any spin.
+    // Our rule: unlimited tries per UTC day until a WIN (rewardEp > 0).
+    // So we only lock DONE after a win.
+    setCanSpin(typeof j.canSpin === 'boolean' ? j.canSpin : true)
           setNextResetUtc(j.nextResetUtc || '')
         }
       } catch (e) {
-        // If backend unavailable, keep UX safe
-        setCanSpin(false)
+        // If backend unavailable, keep UX responsive (button still requires token)
+        setCanSpin(true)
       }
     }
     run()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [API_BASE, token, wallet, sessionId])
 
+  // How to Play modal: ESC to close + lock background scroll
+  useEffect(() => {
+    if (!howToOpen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setHowToOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [howToOpen])
 
   const spin = async () => {
     if (spinning) return
@@ -276,10 +294,8 @@ export default function SlotMachine({
 
     if (!j || !j.ok) {
       setSpinning(false)
-      setWinToast('Spin failed. Try again later.')
-      window.clearTimeout(window.__slotToastT)
-      window.__slotToastT = window.setTimeout(() => setWinToast(null), 2400)
-      return
+      setWinToast(null)  // silent fail
+            return
     }
 
     // Apply final server result
@@ -289,11 +305,21 @@ export default function SlotMachine({
     const final = [keyToIcon(finalKeys[0]), keyToIcon(finalKeys[1]), keyToIcon(finalKeys[2])]
     setReels(final)
 
-    setCanSpin(!!j.canSpin)
+    // Backend may incorrectly flip canSpin=false after any spin.
+    // Our rule: unlimited tries per UTC day until a WIN (rewardEp > 0).
+    // So we only lock DONE after a win.
+    setCanSpin(typeof j.canSpin === 'boolean' ? j.canSpin : true)
     setNextResetUtc(j.nextResetUtc || nextResetUtc || '')
 
     const rewardEp = Number(j.rewardEp || 0)
     const isTriple = rewardEp > 0
+
+    // Force rule: keep spinning until a win; only DONE after win
+    if (isTriple) {
+      setCanSpin(false)
+    } else {
+      setCanSpin(true)
+    }
 
     if (isTriple) {
       setConfettiSeed(Date.now())
@@ -303,9 +329,7 @@ export default function SlotMachine({
       window.clearTimeout(window.__slotToastT)
       window.__slotToastT = window.setTimeout(() => setWinToast(null), 2600)
     } else {
-      setWinToast('No match — spin again!')
-      window.clearTimeout(window.__slotToastT)
-      window.__slotToastT = window.setTimeout(() => setWinToast(null), 2200)
+      setWinToast(null)  // no toast on no-match
     }
 
     setSpinning(false)
@@ -334,13 +358,56 @@ export default function SlotMachine({
       {confettiSeed ? <ConfettiBurst key={confettiSeed} seed={confettiSeed} /> : null}
       {winToast ? <div className="slotToastWin">{winToast}</div> : null}
 
+
+      {howToOpen ? (
+        <div className="slotHowtoOverlay" onMouseDown={() => setHowToOpen(false)}>
+          <div className="slotHowtoModal" onMouseDown={(e) => e.stopPropagation()}>
+            <div className="slotHowtoHeader">
+              <div className="slotHowtoTitle">How to Play — Daily Slot</div>
+              <button className="slotHowtoClose" type="button" onClick={() => setHowToOpen(false)} aria-label="Close">
+                ×
+              </button>
+            </div>
+
+            <div className="slotHowtoBody">
+              <div className="slotHowtoLead">
+                Goal: Match <b>3 identical tiles</b> to win the daily reward.
+              </div>
+              <ol className="slotHowtoList">
+                <li>Press <b>SPIN</b> to roll the 3 tiles.</li>
+                <li>If all 3 tiles match, you win and the game becomes <b>DONE</b> for today.</li>
+                <li>If they don&apos;t match, just press <b>SPIN</b> again — you can keep trying until you hit a match.</li>
+                <li>Daily reset happens at <b>00:00 UTC</b>.</li>
+              </ol>
+              <div className="slotHowtoNote">
+                Note: Rewards/limits are enforced by backend in production. Confetti appears on a win.
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+
       <div className="slotBottomRow">
-        <button className="slotSpinButton" onClick={spin} disabled={spinning || !API_BASE || !token}>
-          <span className="slotSpinText">
-            {spinning ? 'SPINNING' : (!token ? 'CONNECT' : (canSpin ? 'SPIN' : 'DONE'))}
-          </span>
-          <span className="slotSpinGlow" />
-        </button>
+        <div className="slotActionsCenter">
+          <button className="slotSpinButton slotSpinPrimary" onClick={spin} disabled={spinning || !API_BASE || !token || !canSpin}>
+            <span className="slotSpinText">
+              {spinning ? 'SPINNING' : (!token ? 'CONNECT' : (canSpin ? 'SPIN' : 'DONE'))}
+            </span>
+            <span className="slotSpinGlow" />
+          </button>
+
+          <button
+            className="slotHowtoDock"
+            type="button"
+            onClick={() => setHowToOpen(true)}
+            aria-label="How to Play"
+            title="How to Play"
+          >
+            <span className="slotHowtoDockIcon">?</span>
+            <span className="slotHowtoDockText">How to Play</span>
+          </button>
+        </div>
       </div>
     </div>
   )
