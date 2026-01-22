@@ -354,3 +354,14 @@
     z-index: 2;
   }
 }
+
+
+
+/* V6: If it still looks like a "dark layer" on mobile, the sheen overlay is too visible on light-background avatars.
+   We disable the card sheen ONLY for Legendary (5) + 4TSC_RAR (125) on mobile. */
+@media (max-width: 820px){
+  .seriesKey-legendary-skunk-energy-series::after,
+  .seriesKey-4TSC_RAR::after{
+    display: none !important;
+  }
+}
