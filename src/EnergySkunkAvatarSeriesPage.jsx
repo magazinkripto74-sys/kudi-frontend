@@ -1,15 +1,45 @@
-import React, { useMemo, useState } from "react"
+import React, {useMemo, useRef, useState} from "react"
 import { ENERGY_AVATAR_SERIES, ENERGY_AVATAR_SERIES_GROUPS } from "./energyAvatarSeriesData"
 import "./energySkunkAvatarSeries.css"
 
 export default function EnergySkunkAvatarSeriesPage({ onBack }) {
   const [selectedSeries, setSelectedSeries] = useState("all")
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+  const pageRef = useRef(null)
 
-  const items = useMemo(() => {
+  const scrollToTop = () => {
+    // Some layouts use an internal scroll container (body is fixed). We find the nearest scrollable parent.
+    const start = pageRef.current
+    const isScrollable = (el) => {
+      if (!el) return False
+      const style = window.getComputedStyle(el)
+      const overflowY = style.overflowY
+      const canScroll = (overflowY === "auto" || overflowY === "scroll" || overflowY === "overlay")
+      return canScroll && el.scrollHeight > el.clientHeight + 2
+    }
+
+    let el = start
+    while (el && el !== document.body && el !== document.documentElement) {
+      if (isScrollable(el)) break
+      el = el.parentElement
+    }
+
+    const target = isScrollable(el) ? el : (document.scrollingElement || document.documentElement)
+
+    try {
+      target.scrollTo({ top: 0, behavior: "smooth" })
+    } catch (e) {
+      target.scrollTop = 0
+    }
+
+    // Fallback for browsers that still scroll the window
+    try {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    } catch (e) {
+      window.scrollTo(0, 0)
+    }
+  }
+const items = useMemo(() => {
     if (selectedSeries === "all") return ENERGY_AVATAR_SERIES
     return ENERGY_AVATAR_SERIES.filter((x) => x.series === selectedSeries)
   }, [selectedSeries])
@@ -18,7 +48,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
   const groups = ENERGY_AVATAR_SERIES_GROUPS.filter((g) => g.key !== "baba-the-first-energy")
 
   return (
-    <div className="energySeriesPage">
+    <div className="energySeriesPage" ref={pageRef}>
       <div className="energySeriesTopbar">
         <button className="btn secondary energySeriesBack" type="button" onClick={onBack}>
           Back
@@ -113,7 +143,10 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
                   </div>
                 ))}
               {groupItems.length % 4 !== 0 && (
-                  <div className="energySeriesScrollTopPanel">
+                  <div
+                    className="energySeriesScrollTopPanel"
+                    style={{ gridColumn: `${(groupItems.length % 4) + 1} / 5` }}
+                  >
                     <button className="btn ghost energySeriesScrollTopBtn" type="button" onClick={scrollToTop}>
                       ↑ Back to Top
                     </button>
