@@ -94,9 +94,9 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
 
               <div className="energySeriesGrid">
                 {groupItems.map((it) => (
-                  <div className={`energySeriesCard seriesKey-${g.key}`} key={it.id}>
+                  <div className="energySeriesCard" key={it.id}>
                     <div className="energySeriesCardMedia">
-                      <img src={it.src} alt={it.id} loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.opacity="0.15"; e.currentTarget.style.filter="grayscale(1)";}} />
+                      <img src={it.src} alt={it.id} loading="lazy" />
                     </div>
                     <div className="energySeriesCardInfo">
                       <div className="energySeriesCardName">{it.id}</div>
