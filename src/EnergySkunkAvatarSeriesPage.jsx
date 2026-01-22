@@ -1,57 +1,15 @@
-import React, {useMemo, useRef, useState} from "react"
+import React, { useMemo, useState } from "react"
 import { ENERGY_AVATAR_SERIES, ENERGY_AVATAR_SERIES_GROUPS } from "./energyAvatarSeriesData"
 import "./energySkunkAvatarSeries.css"
 
 export default function EnergySkunkAvatarSeriesPage({ onBack }) {
   const [selectedSeries, setSelectedSeries] = useState("all")
 
-  const pageRef = useRef(null)
-
- const scrollToTop = () => {
-  const scroller =
-    document.querySelector(".appRootScroll") ||
-    document.querySelector(".appScroll") ||
-    document.querySelector(".mainScroll") ||
-    document.scrollingElement ||
-    document.documentElement;
-
-  try {
-    scroller.scrollTo({ top: 0, behavior: "smooth" });
-  } catch (e) {
-    scroller.scrollTop = 0;
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-  // fallback
-  try {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  } catch (e) {
-    window.scrollTo(0, 0);
-  }
-};
-
-
-    let el = start
-    while (el && el !== document.body && el !== document.documentElement) {
-      if (isScrollable(el)) break
-      el = el.parentElement
-    }
-
-    const target = isScrollable(el) ? el : (document.scrollingElement || document.documentElement)
-
-    try {
-      target.scrollTo({ top: 0, behavior: "smooth" })
-    } catch (e) {
-      target.scrollTop = 0
-    }
-
-    // Fallback for browsers that still scroll the window
-    try {
-      window.scrollTo({ top: 0, behavior: "smooth" })
-    } catch (e) {
-      window.scrollTo(0, 0)
-    }
-  }
-const items = useMemo(() => {
+  const items = useMemo(() => {
     if (selectedSeries === "all") return ENERGY_AVATAR_SERIES
     return ENERGY_AVATAR_SERIES.filter((x) => x.series === selectedSeries)
   }, [selectedSeries])
@@ -60,7 +18,7 @@ const items = useMemo(() => {
   const groups = ENERGY_AVATAR_SERIES_GROUPS.filter((g) => g.key !== "baba-the-first-energy")
 
   return (
-    <div className="energySeriesPage" ref={pageRef}>
+    <div className="energySeriesPage">
       <div className="energySeriesTopbar">
         <button className="btn secondary energySeriesBack" type="button" onClick={onBack}>
           Back
@@ -155,10 +113,7 @@ const items = useMemo(() => {
                   </div>
                 ))}
               {groupItems.length % 4 !== 0 && (
-                  <div
-                    className="energySeriesScrollTopPanel"
-                    style={{ gridColumn: `${(groupItems.length % 4) + 1} / 5` }}
-                  >
+                  <div className="energySeriesScrollTopPanel">
                     <button className="btn ghost energySeriesScrollTopBtn" type="button" onClick={scrollToTop}>
                       ↑ Back to Top
                     </button>
