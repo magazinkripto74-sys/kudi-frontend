@@ -9,61 +9,6 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
-
-  const tryFallbackSrc = (src) => {
-    // Vercel/Linux is case-sensitive; Windows local isn't.
-    // If some images were committed with different casing, try a few safe fallbacks.
-    try {
-      const parts = src.split("/");
-      const file = parts[parts.length - 1];
-      const dir = parts[parts.length - 2] || "";
-      const dir2 = parts[parts.length - 3] || "";
-
-      const candidates = [];
-
-      // 1) swap filename casing
-      candidates.push([...parts.slice(0, -1), file.toLowerCase()].join("/"));
-      candidates.push([...parts.slice(0, -1), file.toUpperCase()].join("/"));
-
-      // 2) swap series folder casing (common issue: 4TSC_RAR vs 4tsc_rar)
-      if (dir) {
-        candidates.push([...parts.slice(0, -2), dir.toLowerCase(), file].join("/"));
-        candidates.push([...parts.slice(0, -2), dir.toUpperCase(), file].join("/"));
-      }
-
-      // 3) swap parent folder casing too (rare, but cheap)
-      if (dir2) {
-        candidates.push([...parts.slice(0, -3), dir2.toLowerCase(), dir, file].join("/"));
-        candidates.push([...parts.slice(0, -3), dir2.toUpperCase(), dir, file].join("/"));
-      }
-
-      // de-dupe, keep order
-      return Array.from(new Set(candidates)).filter((x) => x && x !== src);
-    } catch {
-      return [];
-    }
-  };
-
-  const handleImgError = (e) => {
-    const img = e.currentTarget;
-    const src = img.getAttribute("src") || "";
-    const tried = img.getAttribute("data-tried") || "";
-    const triedList = tried ? tried.split("|") : [];
-
-    const fallbacks = tryFallbackSrc(src).filter((c) => !triedList.includes(c));
-    if (fallbacks.length > 0) {
-      const next = fallbacks[0];
-      img.setAttribute("data-tried", [...triedList, next].join("|"));
-      img.src = next;
-      return;
-    }
-
-    // final: show subtle placeholder state
-    img.style.opacity = "0.18";
-    img.style.filter = "grayscale(1)";
-  };
-
-
   const items = useMemo(() => {
     if (selectedSeries === "all") return ENERGY_AVATAR_SERIES
     return ENERGY_AVATAR_SERIES.filter((x) => x.series === selectedSeries)

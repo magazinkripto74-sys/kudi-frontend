@@ -307,10 +307,40 @@
   }
 }
 
-/* Avatar image fallback polish (transparent PNGs / missing bg) */
-.energySeriesCardMedia{
-  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.32));
+
+
+/* Layering fix: keep neon sheen BEHIND real content (prevents "crushing" on mobile) */
+.energySeriesPage{
+  position: relative !important;
 }
-.energySeriesCardMedia img{
-  background: transparent;
+.energySeriesPage > *{
+  position: relative;
+  z-index: 2;
+}
+.energySeriesPage::before,
+.energySeriesPage::after{
+  z-index: 0;
+}
+
+.energySeriesCard,
+.energySeriesBabaCard,
+.energySeriesScrollTopPanel{
+  position: relative !important;
+}
+.energySeriesCard > *,
+.energySeriesBabaCard > *,
+.energySeriesScrollTopPanel > *{
+  position: relative;
+  z-index: 2;
+}
+.energySeriesCard::after,
+.energySeriesBabaCard::after,
+.energySeriesScrollTopPanel::after{
+  z-index: 1;
+}
+
+.energySeriesCardMedia img,
+.energySeriesBabaMedia img{
+  position: relative;
+  z-index: 3;
 }
