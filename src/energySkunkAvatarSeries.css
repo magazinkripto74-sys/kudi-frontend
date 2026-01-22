@@ -89,7 +89,7 @@
 .energySeriesBabaMedia img{
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display:block;
 }
 .energySeriesBabaInfo{ flex: 1; min-width: 0; }
@@ -117,7 +117,7 @@
 
 .energySeriesGrid{
   display:grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 12px;
 }
 
@@ -132,11 +132,17 @@
   width: 100%;
   aspect-ratio: 1/1;
   background: rgba(0,0,0,.25);
+  padding: 6px;
+  box-sizing: border-box;
 }
+.energySeriesCardMedia img{
+  border-radius: 12px;
+}
+
 .energySeriesCardMedia img{
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display:block;
 }
 .energySeriesCardInfo{
@@ -182,7 +188,11 @@
   .energySeriesFilter{ min-width: 0; }
   .energySeriesBabaCard{ flex-direction: column; }
   .energySeriesBabaMedia{ width: 100%; flex: none; }
-  .energySeriesGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .energySeriesGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .energySeriesCardInfo{ padding: 8px; }
+  .energySeriesCardName{ font-size: 11px; }
+  .energySeriesCardPrice{ font-size: 11px; }
+
 }
 
 
@@ -244,7 +254,17 @@
 
 /* Cards neon + glass */
 .energySeriesCard,
-.energySeriesBabaCard,
+.energySeriesBabaCard{
+  background: rgba(12,12,18,.48) !important;
+  border: 1px solid rgba(255,255,255,.12) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  animation: energyGlowPulseV2 4.8s ease-in-out infinite;
+
+  position: relative;
+  isolation: isolate;
+}
+
 .energySeriesScrollTopPanel{
   background: rgba(12,12,18,.48) !important;
   border: 1px solid rgba(255,255,255,.12) !important;
@@ -253,8 +273,10 @@
   animation: energyGlowPulseV2 4.8s ease-in-out infinite;
 
   position: relative;
+  isolation: isolate;
   grid-column: 1 / -1;
 }
+
 
 .energySeriesCard::after,
 .energySeriesBabaCard::after,
@@ -322,3 +344,11 @@
   position: relative;
   z-index: 1;
 }
+
+@media (max-width: 480px){
+  .energySeriesGrid{ grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .energySeriesCardInfo{ padding: 6px; gap: 6px; }
+  .energySeriesActionSm{ padding: 7px 8px; font-size: 11px; }
+}
+
+.energySeriesScrollTopPanel{ display:flex; justify-content:center; padding: 10px 0 2px; }

@@ -56,7 +56,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
 
         <div className="energySeriesTitleWrap">
           <div className="energySeriesTitle">ENERGY SKUNK AVATAR SERIES</div>
-          <div className="energySeriesSub">101 NFTs • visual preview (Buy/Sell coming soon)</div>
+          <div className="energySeriesSub">{ENERGY_AVATAR_SERIES.length} NFTs • visual preview (Buy/Sell coming soon)</div>
         </div>
 
         <div className="energySeriesFilter">
@@ -80,7 +80,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
         <div className="energySeriesSection">
           <div className="energySeriesSectionHeader">
             <div className="energySeriesSectionTitle">BABA: The First Energy</div>
-            <div className="energySeriesSectionMeta">1/1 • Price: {baba.price}</div>
+            <div className="energySeriesSectionMeta">1/1 • Price: {baba.priceUSDC}</div>
           </div>
 
           <div className="energySeriesBabaCard">
@@ -93,7 +93,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
                 God-tier collectible. (Visual only for now — marketplace later.)
               </div>
               <div className="energySeriesPriceRow">
-                <div className="energySeriesPrice">Price: {baba.price}</div>
+                <div className="energySeriesPrice">Price: {baba.priceUSDC}</div>
                 <div className="energySeriesActions">
                   <button className="btn ghost energySeriesAction" type="button" disabled title="Coming soon">
                     BUY
@@ -130,7 +130,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
                     </div>
                     <div className="energySeriesCardInfo">
                       <div className="energySeriesCardName">{it.id}</div>
-                      <div className="energySeriesCardPrice">{it.price}</div>
+                      <div className="energySeriesCardPrice">{it.priceUSDC}</div>
                       <div className="energySeriesCardActions">
                         <button className="btn ghost energySeriesActionSm" type="button" disabled title="Coming soon">
                           BUY
@@ -142,16 +142,17 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
                     </div>
                   </div>
                 ))}
-              {groupItems.length % 4 !== 0 && (
-                  <div className="energySeriesScrollTopPanel">
-                    <button className="btn ghost energySeriesScrollTopBtn" type="button" onClick={scrollToTop}>
-                      ↑ Back to Top
-                    </button>
-                  </div>
-                )}
-
               </div>
+
+              {groupItems.length > 8 && (
+                <div className="energySeriesScrollTopPanel">
+                  <button className="btn ghost energySeriesScrollTopBtn" type="button" onClick={scrollToTop}>
+                    ↑ Back to Top
+                  </button>
+                </div>
+              )}
             </div>
+
           )
         })}
       </div>
