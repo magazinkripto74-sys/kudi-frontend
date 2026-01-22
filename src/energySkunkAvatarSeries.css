@@ -309,38 +309,18 @@
 
 
 
-/* Layering fix: keep neon sheen BEHIND real content (prevents "crushing" on mobile) */
-.energySeriesPage{
-  position: relative !important;
-}
-.energySeriesPage > *{
-  position: relative;
-  z-index: 2;
-}
-.energySeriesPage::before,
-.energySeriesPage::after{
-  z-index: 0;
-}
+/* V4: Mobile fix for only LEGENDARY (5) + 4TSC_RAR (125)
+   These assets are framed "taller"; square media crops them on small screens. */
+@media (max-width: 820px){
+  .seriesKey-legendary-skunk-energy-series .energySeriesCardMedia,
+  .seriesKey-4TSC_RAR .energySeriesCardMedia{
+    aspect-ratio: 4 / 5; /* taller box -> avoids "only head" look */
+  }
 
-.energySeriesCard,
-.energySeriesBabaCard,
-.energySeriesScrollTopPanel{
-  position: relative !important;
-}
-.energySeriesCard > *,
-.energySeriesBabaCard > *,
-.energySeriesScrollTopPanel > *{
-  position: relative;
-  z-index: 2;
-}
-.energySeriesCard::after,
-.energySeriesBabaCard::after,
-.energySeriesScrollTopPanel::after{
-  z-index: 1;
-}
-
-.energySeriesCardMedia img,
-.energySeriesBabaMedia img{
-  position: relative;
-  z-index: 3;
+  .seriesKey-legendary-skunk-energy-series .energySeriesCardMedia img,
+  .seriesKey-4TSC_RAR .energySeriesCardMedia img{
+    object-fit: contain;
+    object-position: center;
+    background: rgba(0,0,0,.25);
+  }
 }
