@@ -55,7 +55,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
 
           <div className="energySeriesBabaCard">
             <div className="energySeriesBabaMedia">
-              <img src={baba.src} alt={baba.id} />
+              <img src={baba.src} alt={baba.id} loading="eager" decoding="async" />
             </div>
             <div className="energySeriesBabaInfo">
               <div className="energySeriesBabaName">{baba.id}</div>
@@ -96,7 +96,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
                 {groupItems.map((it) => (
                   <div className="energySeriesCard" key={it.id}>
                     <div className="energySeriesCardMedia">
-                      <img src={it.src} alt={it.id} loading="lazy" />
+                      <img src={it.src} alt={it.id} loading="lazy" decoding="async" onError={(e)=>{e.currentTarget.style.opacity="0.15"; e.currentTarget.style.filter="grayscale(1)";}} />
                     </div>
                     <div className="energySeriesCardInfo">
                       <div className="energySeriesCardName">{it.id}</div>
