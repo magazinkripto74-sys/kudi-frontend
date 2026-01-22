@@ -113,10 +113,7 @@ export default function EnergySkunkAvatarSeriesPage({ onBack }) {
                   </div>
                 ))}
               {groupItems.length % 4 !== 0 && (
-                  <div
-                    className="energySeriesScrollTopPanel"
-                    style={{ gridColumn: `${(groupItems.length % 4) + 1} / 5` }}
-                  >
+                  <div className="energySeriesScrollTopPanel">
                     <button className="btn ghost energySeriesScrollTopBtn" type="button" onClick={scrollToTop}>
                       ↑ Back to Top
                     </button>

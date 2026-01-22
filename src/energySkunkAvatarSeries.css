@@ -252,7 +252,9 @@
   -webkit-backdrop-filter: blur(12px) !important;
   animation: energyGlowPulseV2 4.8s ease-in-out infinite;
 
-  position: relative;}
+  position: relative;
+  grid-column: 1 / -1;
+}
 
 .energySeriesCard::after,
 .energySeriesBabaCard::after,
