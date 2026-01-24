@@ -847,22 +847,23 @@ function doFollow(kind) {
   return (
     <div className="container">
       <style>{`
-        /* KUDI BABA GUIDE button: keep desktop absolute, but on mobile switch to normal flow (no overlap) */
-        @media (max-width: 640px) {
+        /* KUDI BABA GUIDE button:
+           - Desktop: stays absolute inside footer (no layout changes)
+           - Mobile: becomes FIXED so it never overlaps footer content
+        */
+        @media (max-width: 900px) {
           .kudiBabaGuideBtn{
-            position: static !important;
-            left: auto !important;
-            bottom: auto !important;
-            margin-top: 10px !important;
-            align-self: flex-start;
+            position: fixed !important;
+            left: 16px !important;
+            right: auto !important;
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+            z-index: 9999 !important;
           }
-          .footerLeft{
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 10px !important;
+          .footerWrap{
+            padding-bottom: 92px !important; /* space so last lines aren't covered */
           }
         }
-      `}</style>
+        `}</style>
 
       <MobileHamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
       <style>{`
