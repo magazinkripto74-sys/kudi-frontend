@@ -846,6 +846,24 @@ function doFollow(kind) {
 
   return (
     <div className="container">
+      <style>{`
+        /* KUDI BABA GUIDE button: keep desktop absolute, but on mobile switch to normal flow (no overlap) */
+        @media (max-width: 640px) {
+          .kudiBabaGuideBtn{
+            position: static !important;
+            left: auto !important;
+            bottom: auto !important;
+            margin-top: 10px !important;
+            align-self: flex-start;
+          }
+          .footerLeft{
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+          }
+        }
+      `}</style>
+
       <MobileHamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
       <style>{`
         .kudiHamburgerBtn{
@@ -1415,7 +1433,7 @@ function doFollow(kind) {
           <a href={TRUST_LINKS.mail} className="footLink">Contact</a>
         
         <button
-          className="btn secondary"
+          className="btn secondary kudiBabaGuideBtn"
           style={{
             position: "absolute",
             left: 16,
