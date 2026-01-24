@@ -856,7 +856,7 @@ function doFollow(kind) {
             position: fixed !important;
             left: 16px !important;
             right: auto !important;
-            bottom: calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+            bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
             z-index: 9999 !important;
           }
           .footerWrap{
@@ -1439,14 +1439,10 @@ function doFollow(kind) {
             position: "absolute",
             left: 16,
             bottom: 14,
-            padding: "11px 16px",
-            borderRadius: 16,
-            background: "linear-gradient(135deg, rgba(140,110,255,0.22), rgba(80,210,255,0.10))",
-            border: "1px solid rgba(170,140,255,0.40)",
-            boxShadow: "0 10px 28px rgba(0,0,0,0.35), 0 0 22px rgba(150,120,255,0.22)",
-            backdropFilter: "blur(8px)",
+            padding: "10px 14px",
+            borderRadius: 14,
             fontWeight: 800,
-            letterSpacing: 0.4,
+            letterSpacing: 0.2,
             zIndex: 3,
           }}
           onClick={() => setIsKudiBabaGuideOpen(true)}
