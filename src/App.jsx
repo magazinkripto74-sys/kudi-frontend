@@ -246,8 +246,6 @@ const [wallet, setWallet] = useState('')
   const [isRoadmapOpen, setIsRoadmapOpen] = useState(false)
 
 
-  const [isKudiBabaGuideOpen, setIsKudiBabaGuideOpen] = useState(false)
-
   // Initial load: restore wallet/token, remember referral code (from URL or storage).
   useEffect(() => {
     try {
@@ -846,25 +844,6 @@ function doFollow(kind) {
 
   return (
     <div className="container">
-      <style>{`
-        /* KUDI BABA GUIDE button:
-           - Desktop: stays absolute inside footer (no layout changes)
-           - Mobile: becomes FIXED so it never overlaps footer content
-        */
-        @media (max-width: 900px) {
-          .kudiBabaGuideBtn{
-            position: fixed !important;
-            left: 16px !important;
-            right: auto !important;
-            bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-            z-index: 9999 !important;
-          }
-          .footerWrap{
-            padding-bottom: 92px !important; /* space so last lines aren't covered */
-          }
-        }
-        `}</style>
-
       <MobileHamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
       <style>{`
         .kudiHamburgerBtn{
@@ -1419,7 +1398,7 @@ function doFollow(kind) {
       <AquariumBanner />
 
 
-<div className="footerWrap" style={{ position: "relative" }}>
+<div className="footerWrap">
         <div className="footerLeft">
           <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsTermsOpen(true)}}>Terms</a>
           <span className="footSep">•</span>
@@ -1432,25 +1411,7 @@ function doFollow(kind) {
 	          <a href="#" className="footLink" onClick={(e)=>{e.preventDefault();setIsRoadmapOpen(true)}}>Roadmap</a>
           <span className="footSep">•</span>
           <a href={TRUST_LINKS.mail} className="footLink">Contact</a>
-        
-        <button
-          className="btn secondary kudiBabaGuideBtn"
-          style={{
-            position: "absolute",
-            left: 16,
-            bottom: 14,
-            padding: "10px 14px",
-            borderRadius: 14,
-            fontWeight: 800,
-            letterSpacing: 0.2,
-            zIndex: 3,
-          }}
-          onClick={() => setIsKudiBabaGuideOpen(true)}
-        >
-          KUDI BABA GUIDE
-        </button>
-
-</div>
+        </div>
 
         <div className="footerRight">
           <div className="footerSocialTop">
@@ -1645,40 +1606,6 @@ function doFollow(kind) {
     </div>
   </div>
 ) : null}
-      {isKudiBabaGuideOpen ? (
-        <div
-          className="modalBg"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setIsKudiBabaGuideOpen(false)
-          }}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modalTop">
-              <div>
-                <div className="modalTitle">KUDI BABA GUIDE</div>
-                <div className="modalSub">How to play — KUDI BABA explains everything.</div>
-              </div>
-              <button className="xBtn" onClick={() => setIsKudiBabaGuideOpen(false)}>✕</button>
-            </div>
-
-            <div className="modalBody" style={{ maxHeight: "70vh", overflow: "auto" }}>
-              <video
-                src="/media/kudi-baba-guide.mp4"
-                controls
-                playsInline
-                preload="metadata"
-                style={{ width: "100%", aspectRatio: "9 / 16", borderRadius: 14, background: "#000", objectFit: "contain" }}
-              />
-            </div>
-
-            <div className="modalBottom">
-              <button className="btn secondary" onClick={() => setIsKudiBabaGuideOpen(false)}>Close</button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-
 
 
 {isPrivacyOpen ? (
