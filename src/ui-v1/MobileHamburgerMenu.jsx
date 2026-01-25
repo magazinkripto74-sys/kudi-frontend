@@ -15,6 +15,7 @@ export default function MobileHamburgerMenu({
   onOpenAvatarStore = null,
 }) {
   const [expanded, setExpanded] = useState(null)
+  const [isGuideOpen, setIsGuideOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -206,7 +207,11 @@ export default function MobileHamburgerMenu({
               <div key={s.key} className="kudiAccItem">
                 <button
                   className="kudiAccHeader"
-                  onClick={() => setExpanded(isOpen ? null : s.key)}
+                  onClick={() => {
+                    const next = isOpen ? null : s.key
+                    setExpanded(next)
+                    if (next === 'what') setIsGuideOpen(true)
+                  }}
                   aria-expanded={isOpen}
                 >
                   <span>{s.title}</span>
@@ -251,7 +256,37 @@ export default function MobileHamburgerMenu({
             Back
           </button>
         </div>
-      </div>
+      
+      {/* KUDI BABA GUIDE VIDEO MODAL (opens when "What is KUDI SKUNK?" expands) */}
+      {isGuideOpen && (
+        <div
+          className="kudiGuideModalOverlay"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setIsGuideOpen(false)}
+        >
+          <div className="kudiGuideModalCard" onClick={(e) => e.stopPropagation()}>
+            <div className="kudiGuideModalTop">
+              <div className="kudiGuideModalTitle">KUDI BABA GUIDE</div>
+              <button className="kudiGuideModalClose" onClick={() => setIsGuideOpen(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="kudiGuideVideoWrap">
+              <video
+                className="kudiGuideVideo"
+                src="/media/kudi-baba-guide.mp4"
+                controls
+                playsInline
+                preload="metadata"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+</div>
     </div>
   )
 }
